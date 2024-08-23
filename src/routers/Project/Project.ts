@@ -1,5 +1,5 @@
 import express from 'express';
-import verifyToken from '../../tools/verifyToken';
+import verifyToken from '../../handler/verifyToken';
 const project_route = express.Router();
 
 project_route.get('/:user_id',(req,res)=>{

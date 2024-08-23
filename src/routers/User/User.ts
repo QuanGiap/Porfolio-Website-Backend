@@ -5,7 +5,8 @@ user_route.get('/:user_id',(req,res)=>{
     //fectch user item
     let user_id = req.params.user_id;
     return res.json({
-        phone_number:'',
+        first_name:'',
+        last_name:'',
         email:'',
         url_img:'',
     })

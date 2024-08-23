@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import user_route from "./routers/User/User";
+const PORT = process.env.PORT || 3000;
 dotenv.config();
 
 const app = express()
@@ -17,6 +18,6 @@ app.get('/', function (req:Request, res:Response) {
   res.json({msg: 'This is CORS-enabled only for example.com!'})
 })
 
-app.listen(3000, function () {
-  console.log('CORS-enabled web server listening on port 3000')
+app.listen(PORT, function () {
+  console.log('CORS-enabled web server listening on port '+PORT)
 })
