@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from 'cors'
 import dotenv from 'dotenv';
-import user_route from "./routers/User/User";
+import user_route from "../src/routers/User/User";
 const PORT = process.env.PORT || 3000;
 dotenv.config();
 
@@ -21,3 +21,4 @@ app.get('/', function (req:Request, res:Response) {
 app.listen(PORT, function () {
   console.log('CORS-enabled web server listening on port '+PORT)
 })
+export default app;
