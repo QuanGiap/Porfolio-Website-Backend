@@ -147,6 +147,7 @@ model PortfolioData {
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
   Experience        Experience[]
+  PortfolioImage    PortfolioImage[]
 
   @@index([user_id])
 }
@@ -237,6 +238,16 @@ model PortfolioContent {
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   content          String
+  place_id         String
+
+  @@index([portfolioData_id])
+}
+
+model PortfolioImage {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String        @db.ObjectId
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  imageId          String
   place_id         String
 
   @@index([portfolioData_id])
