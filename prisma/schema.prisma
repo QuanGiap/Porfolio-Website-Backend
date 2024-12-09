@@ -12,106 +12,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum MediaType {
-  FACE_BOOK
-  TWITTER
-  INSTAGRAM
-  LINKEDIN
-  LEETCODE
-  GITHUB
-}
-
-enum ToolType {
-  REST_APIS
-  GRAPHQL
-  GRPC
-  KONG
-  DOCKER
-  KUBERNETES
-  JENKINS
-  CIRCLECI
-  TERRAFORM
-  GOOGLE_CLOUD_PLATFORM
-  AMAZON_WEB_SERVICES
-  MICROSOFT_AZURE
-  HEROKU
-  MONGODB
-  MYSQL
-  POSTGRESQL
-  REDIS
-  NODE_JS
-  DJANGO
-  FLASK
-  RUBY_ON_RAILS
-  REACT
-  ANGULAR
-  VUE_JS
-  BOOTSTRAP
-  MUI
-  ADOBE_PHOTOSHOP
-  ADOBE_ILLUSTRATOR
-  FIGMA
-  SKETCH
-  ADOBE_XD
-  CANVA
-  BEHANCE
-  DRIBBBLE
-  ADOBE_LIGHTROOM
-  ADOBE_PREMIERE_PRO
-  FINAL_CUT_PRO
-  DA_VINCI_RESOLVE
-  VSCO
-  FLICKR
-  VIMEO
-  YOUTUBE
-  WORDPRESS
-  MEDIUM
-  WIX
-  SQUARESPACE
-  GRAMMARLY
-  SCRIVENER
-  SUBSTACK
-  GHOST
-  PYTHON
-  R
-  JUPYTER_NOTEBOOKS
-  TABLEAU
-  POWER_BI
-  GOOGLE_DATA_STUDIO
-  APACHE_SPARK
-  SQL
-  GOOGLE_ANALYTICS
-  SEM_RUSH
-  AHREFS
-  HOOTSUITE
-  MAILCHIMP
-  HUBSPOT
-  BUFFER
-  ABLETON_LIVE
-  FL_STUDIO
-  PRO_TOOLS
-  LOGIC_PRO
-  SOUNDCLOUD
-  BANDCAMP
-  SPOTIFY_FOR_ARTISTS
-  AUTOCAD
-  REVIT
-  SKETCHUP
-  BLENDER
-  THREE_DS_MAX
-  RHINO
-  LUMION
-  ARCHITECTURE_PORTFOLIO
-  LINKEDIN
-  POWERPOINT
-  GOOGLE_SLIDES
-  MICROSOFT_EXCEL
-  ZOHO
-  SLACK
-  SALESFORCE
-  TRELLO
-}
-
 enum ExperienceType {
   VOLUNTEER
   INTERNSHIP
@@ -128,7 +28,6 @@ model User {
   email_verified Boolean         @default(false)
   phone_verified Boolean         @default(false)
   created_at     DateTime        @default(now())
-  media          Media[]
   code_verify    CodeVerify[]
   portfolio_data PortfolioData[]
 
@@ -146,8 +45,8 @@ model PortfolioData {
   project           Project[]
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
-  Experience        Experience[]
-  PortfolioImage    PortfolioImage[]
+  experience        Experience[]
+  portfolioImage    PortfolioImage[]
 
   @@index([user_id])
 }
@@ -162,10 +61,9 @@ model Experience {
   id               String         @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String         @db.ObjectId
   portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
-  project_type     String
   title            String
   description      String
-  url_imgs         String[]
+  img_ids         String[]
   start_date       DateTime
   end_date         DateTime?
   company_url      String?
@@ -182,11 +80,12 @@ model Project {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  tool_type        ToolType
+  tools             String[]
   project_type     String
   title            String
   description      String
-  url_imgs         String[]
+  skills           String[]
+  img_ids           String[]
   start_date       DateTime
   end_date         DateTime?
   project_url      String
@@ -202,7 +101,7 @@ model Achievement {
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   role             String
   description      String
-  url_imgs         String
+  img_ids          String[]
   start_date       DateTime
   end_date         DateTime
   url              String
@@ -210,16 +109,6 @@ model Achievement {
   last_update      DateTime      @default(now())
 
   @@index([portfolioData_id])
-}
-
-model Media {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  media_type  MediaType
-  user_id     String    @db.ObjectId
-  user        User      @relation(fields: [user_id], references: [id])
-  media_url   String
-  create_at   DateTime  @default(now())
-  last_update DateTime  @default(now())
 }
 
 model CodeVerify {
@@ -247,8 +136,7 @@ model PortfolioImage {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  imageId          String
+  image_id          String
   place_id         String
-
   @@index([portfolioData_id])
 }
