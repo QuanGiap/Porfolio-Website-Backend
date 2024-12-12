@@ -90,7 +90,7 @@ model Project {
   img_ids           String[]
   start_date       DateTime
   end_date         DateTime?
-  project_url      String
+  project_url      String?
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
 
@@ -101,12 +101,12 @@ model Achievement {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  role             String
+  title             String
   description      String
   img_ids          String[]
   start_date       DateTime
   end_date         DateTime
-  url              String
+  url              String?
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
 
@@ -130,7 +130,8 @@ model PortfolioContent {
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   content          String
   place_id         String
-
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
   @@index([portfolioData_id])
 }
 
@@ -138,7 +139,11 @@ model PortfolioImage {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  image_id          String
+  image_id         String
+  image_name       String
+  image_size       String
   place_id         String
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
   @@index([portfolioData_id])
 }

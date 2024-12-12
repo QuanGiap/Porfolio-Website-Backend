@@ -11,7 +11,7 @@ app.use(cors({
     origin: 'http://example.com',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }))
-
+app.use(express.static('public'))
 app.use('/user/',user_route)
 
 app.get('/', function (req:Request, res:Response) {
@@ -19,7 +19,6 @@ app.get('/', function (req:Request, res:Response) {
 })
 
 app.listen(PORT, function () {
-  
   console.log('CORS-enabled web server listening on port '+PORT)
 })
 export default app;
