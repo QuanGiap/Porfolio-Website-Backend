@@ -21,20 +21,22 @@ enum ExperienceType {
 model User {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   first_name     String
-  user_name     String
+  user_name      String
   last_name      String
   email          String
   phone_number   String
   password       String
   email_verified Boolean         @default(false)
   phone_verified Boolean         @default(false)
-  created_at     DateTime        @default(now())
+  create_at     DateTime        @default(now())
+  last_update     DateTime        @default(now())
   code_verify    CodeVerify[]
   portfolio_data PortfolioData[]
+  WebsiteDesign  WebsiteDesign[]
 
+  @@unique([user_name])
   @@index([first_name, last_name])
   @@index([email])
-  @@unique([user_name])
   @@index([phone_number])
 }
 
@@ -50,13 +52,17 @@ model PortfolioData {
   experience        Experience[]
   portfolioImage    PortfolioImage[]
 
-  @@index([user_id,website_design_id])
+  @@index([user_id, website_design_id])
 }
 
 model WebsiteDesign {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   url_website   String
   PortfolioData PortfolioData[]
+  create_at     DateTime        @default(now())
+  last_update   DateTime        @default(now())
+  creator_id    String          @db.ObjectId
+  creator          User            @relation(fields: [creator_id], references: [id])
 }
 
 model Experience {
@@ -65,7 +71,7 @@ model Experience {
   portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
   title            String
   description      String
-  img_ids         String[]
+  img_ids          String[]
   start_date       DateTime
   end_date         DateTime?
   company_url      String?
@@ -82,12 +88,12 @@ model Project {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  tools             String[]
+  tools            String[]
   project_type     String
   title            String
   description      String
   skills           String[]
-  img_ids           String[]
+  img_ids          String[]
   start_date       DateTime
   end_date         DateTime?
   project_url      String?
@@ -101,12 +107,12 @@ model Achievement {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
-  title             String
+  title            String
   description      String
   img_ids          String[]
   start_date       DateTime
   end_date         DateTime
-  url              String?
+  achievement_url  String?
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
 
@@ -132,6 +138,7 @@ model PortfolioContent {
   place_id         String
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
+
   @@index([portfolioData_id])
 }
 
@@ -141,9 +148,10 @@ model PortfolioImage {
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   image_id         String
   image_name       String
-  image_size       String
+  image_size       Int
   place_id         String
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
+
   @@index([portfolioData_id])
 }

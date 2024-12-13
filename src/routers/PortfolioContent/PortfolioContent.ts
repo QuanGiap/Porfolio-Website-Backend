@@ -16,7 +16,7 @@ portfolio_content_route.get("/", async (req, res) => {
     return createErrRes({ error: err_msg, res });
   }
   //user can get info by user name or user id
-  let user_schema_check = user_id ? user_id_schema : user_id_schema;
+  let user_schema_check = user_id ? user_id_schema : user_name_schema;
   let input_check = user_id || user_name;
   const { err_message, parsed_data } = checkValidInput(
     [website_id_schema, user_schema_check],
@@ -56,10 +56,13 @@ portfolio_content_route.get("/", async (req, res) => {
       status_code: 404,
     });
   }
+  //google storage url
+  //change this later after apply storage 
+  const originWindowUrl = process.env.UNIVERSAL_DOMAIN;
   const imgsRes = portfolio_data.portfolioImage.map((img) => {
     const { image_id } = img;
     return {
-      img_url: `${window.origin}/images/${image_id}.jpg`,
+      img_url: `${originWindowUrl}/images/${image_id}.jpg`,
       ...img,
     };
   });

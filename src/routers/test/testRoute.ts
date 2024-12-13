@@ -2,7 +2,7 @@ import express from "express";
 import prisma from "../../tools/PrismaSingleton";
 const test_route = express.Router();
 
-test_route.post('/',async (req,res)=>{
+test_route.get('/',async (req,res)=>{
     const user_count = await prisma.user.count();
     const user_test = await prisma.user.create({
         data:{
@@ -19,6 +19,7 @@ test_route.post('/',async (req,res)=>{
     const website_design = await prisma.websiteDesign.create({
         data:{
             url_website:'randome_website_design_url.com',
+            creator_id:user_test.id,
         }
     })
     const portfolio_data = await prisma.portfolioData.create({
@@ -29,7 +30,7 @@ test_route.post('/',async (req,res)=>{
     })
     const arrLoopShort = [0,1,2,3,4];
     const arrLoopLong = [0,1,2,3,4,5,6,7,8,9];
-    const projects = await prisma.project.createMany({
+    const projectsPromise = prisma.project.createMany({
         data:arrLoopShort.map((index)=>{
             return{
                 portfolioData_id:portfolio_data.id,
@@ -44,18 +45,57 @@ test_route.post('/',async (req,res)=>{
             }
         })
     })
-    const achievement = await prisma.achievement.createMany({
+    const achievementPromise = prisma.achievement.createMany({
         data:arrLoopShort.map((index)=>{
             return{
                 portfolioData_id:portfolio_data.id,
                 title:'Title '+(index+1)+' for user '+user_test.user_name,
                 description:'Description '+(index+1)+' for user '+user_test.user_name,
                 img_ids:['imgs_id_1','imgs_id_2','imgs_id_3'],
-                start_date:new Date(),
+                start_date:new Date(2020),
                 end_date:new Date(),
-                url:'project_url for user '+user_test.user_name,
+                achievement_url:'achievement_url for user '+user_test.user_name,
             }
         })
     })
+    const expsPromise = prisma.experience.createMany({
+        data:arrLoopShort.map((index)=>{
+            return{
+                portfolioData_id:portfolio_data.id,
+                title:'Title '+(index+1)+' for user '+user_test.user_name,
+                description:'Description '+(index+1)+' for user '+user_test.user_name,
+                img_ids:['imgs_id_1','imgs_id_2','imgs_id_3'],
+                start_date:new Date(2020),
+                end_date:new Date(),
+                skills:[],
+                type:'INTERNSHIP',
+                role:'Role for user '+user_test.user_name,
+                company_url:'internship_url for user '+user_test.user_name,
+            }
+        })
+    })
+    const portfolio_contentsPromise = prisma.portfolioContent.createMany({
+        data:arrLoopLong.map(index=>{
+            return{
+                place_id:'Place id number '+index,
+                content:'Context for user '+user_test.user_name,
+                portfolioData_id:portfolio_data.id,
+            }
+        })
+    })
+    const portfolio_imgsPromise = prisma.portfolioImage.createMany({
+        data:arrLoopLong.map(index=>{
+            return{
+                place_id:'Place id number '+index,
+                portfolioData_id:portfolio_data.id,
+                image_name:'img name user '+user_test.user_name,
+                image_size:2000,
+                image_id:'img id user '+user_test.user_name
+            }
+        })
+    })
+    await Promise.all([projectsPromise,achievementPromise,expsPromise,portfolio_contentsPromise,portfolio_imgsPromise])
     return res.send('Test case created');
 })
+
+export default test_route;
