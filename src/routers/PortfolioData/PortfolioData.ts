@@ -4,12 +4,12 @@ import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
 import { user_id_schema, user_name_schema, website_id_schema } from "./schema";
 import { createErrRes } from "../../tools/ResTool";
-const portfolio_content_route = express.Router();
-portfolio_content_route.post("/", verifyToken, (req, res) => {
+const portfolio_data_route = express.Router();
+portfolio_data_route.post("/", verifyToken, (req, res) => {
   //create new content
   res.send("post content is not implemented");
 });
-portfolio_content_route.get("/", async (req, res) => {
+portfolio_data_route.get("/", async (req, res) => {
   const { website_id, user_name, user_id } = req.query;
   if (!user_name && !user_id) {
     const err_msg = "Need user_name or user_id in query url";
@@ -75,4 +75,4 @@ portfolio_content_route.get("/", async (req, res) => {
     experiences: portfolio_data.experience,
   });
 });
-export default portfolio_content_route;
+export default portfolio_data_route;

@@ -3,7 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv';
 import user_route from "../src/routers/User/User";
 import test_route from "./routers/test/testRoute";
-import portfolio_content_route from "./routers/PortfolioContent/PortfolioContent";
+import portfolio_data_route from "./routers/PortfolioData/PortfolioData";
 const PORT = process.env.PORT || 3000;
 dotenv.config();
 
@@ -16,7 +16,7 @@ app.use(cors({
 app.use(express.static('public'))
 app.use('/user/',user_route)
 app.use('/test',test_route);
-app.use('/portfolio_content',portfolio_content_route);
+app.use('/portfolio_content',portfolio_data_route);
 app.get('/', function (req:Request, res:Response) {
   res.json({msg: 'This is CORS-enabled only for example.com!'})
 })
