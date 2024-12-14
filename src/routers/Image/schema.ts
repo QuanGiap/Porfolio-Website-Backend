@@ -11,22 +11,8 @@ export const post_schema = zod.object({
     role:zod.string({required_error:'role is required in body',invalid_type_error:'role need to be a string'}),
     type:zod.nativeEnum(ExperienceType,{required_error:'type is required in body',invalid_type_error:'type should be one of these: '+Object.values(ExperienceType).join(', ')})
 })
-export const date_schema = zod.string().datetime()
-// model Experience {
-//     id               String         @id @default(auto()) @map("_id") @db.ObjectId
-//     portfolioData_id String         @db.ObjectId
-//     portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
-//     title            String
-//     description      String
-//     img_ids          String[]
-//     start_date       DateTime
-//     end_date         DateTime?
-//     company_url      String?
-//     skills           String[]
-//     role             String
-//     create_at        DateTime       @default(now())
-//     last_update      DateTime       @default(now())
-//     type             ExperienceType
-  
-//     @@index([portfolioData_id])
-//   }
+export const get_schema = zod.object({
+    portfolioData_id:zod.string().regex(/^[a-fA-F0-9]{24}$/,'website_design_id need to be valid ObjectID'),
+    company_url:zod.string(),
+
+})

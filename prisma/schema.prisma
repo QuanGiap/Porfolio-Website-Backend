@@ -18,7 +18,7 @@ enum ExperienceType {
   JOB
 }
 
-enum Type{
+enum Type {
   PORTFOLIO
   EXPERICENCE
   PROJECT
@@ -33,12 +33,12 @@ model User {
   last_name      String
   email          String
   phone_number   String
-  img_id        String
+  img_id         String
   password       String
   email_verified Boolean         @default(false)
   phone_verified Boolean         @default(false)
-  create_at     DateTime        @default(now())
-  last_update     DateTime        @default(now())
+  create_at      DateTime        @default(now())
+  last_update    DateTime        @default(now())
   code_verify    CodeVerify[]
   portfolio_data PortfolioData[]
   WebsiteDesign  WebsiteDesign[]
@@ -60,7 +60,10 @@ model PortfolioData {
   portfolio_content PortfolioContent[]
   experience        Experience[]
   portfolioImage    PortfolioImage[]
-
+  title             String
+  desciption        String
+  create_at     DateTime        @default(now())
+  last_update   DateTime        @default(now())
   @@index([user_id, website_design_id])
 }
 
@@ -71,7 +74,7 @@ model WebsiteDesign {
   create_at     DateTime        @default(now())
   last_update   DateTime        @default(now())
   creator_id    String          @db.ObjectId
-  creator          User            @relation(fields: [creator_id], references: [id])
+  creator       User            @relation(fields: [creator_id], references: [id])
 }
 
 model Experience {

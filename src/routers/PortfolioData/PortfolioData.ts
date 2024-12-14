@@ -28,6 +28,7 @@ portfolio_data_route.get("/", async (req, res) => {
   const [web_id, input] = parsed_data;
   const whereQuery: { [key: string]: string } = {};
   whereQuery[user_id ? "id" : "user_name"] = input;
+  //check if user existl
   const user = await prisma.user.findFirst({
     where: whereQuery,
     select: { id: true },
@@ -35,19 +36,11 @@ portfolio_data_route.get("/", async (req, res) => {
   if (!user) {
     return createErrRes({ error: "User not found", status_code: 404, res });
   }
-  const portfolio_data = await prisma.portfolioData.findFirst({
+  const portfolio_data = await prisma.portfolioData.findMany({
     where: {
       website_design_id: web_id,
       user_id: user.id,
-    },
-    select: {
-      id: true,
-      project:true,
-      achievement:true,
-      portfolio_content:true,
-      experience:true,
-      portfolioImage:true,
-    },
+    }
   });
   if (!portfolio_data) {
     return createErrRes({
@@ -58,21 +51,17 @@ portfolio_data_route.get("/", async (req, res) => {
   }
   //google storage url
   //change this later after apply storage 
-  const originWindowUrl = process.env.UNIVERSAL_DOMAIN;
-  const imgsRes = portfolio_data.portfolioImage.map((img) => {
-    const { image_id } = img;
-    return {
-      img_url: `${originWindowUrl}/images/${image_id}.jpg`,
-      ...img,
-    };
-  });
+  // const originWindowUrl = process.env.UNIVERSAL_DOMAIN;
+  // const imgsRes = portfolio_data.portfolioImage.map((img) => {
+  //   const { image_id } = img;
+  //   return {
+  //     img_url: `${originWindowUrl}/images/${image_id}.jpg`,
+  //     ...img,
+  //   };
+  // });
 
   return res.json({
-    contents:portfolio_data.portfolio_content,
-    projects:portfolio_data.project,
-    achievemens:portfolio_data.achievement,
-    imgs: imgsRes,
-    experiences: portfolio_data.experience,
+    portfolio_data:portfolio_data
   });
 });
 export default portfolio_data_route;
