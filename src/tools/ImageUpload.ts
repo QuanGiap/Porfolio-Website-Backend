@@ -17,3 +17,6 @@ const storage = new Storage({
         universe_domain:process.env.UNIVERSAL_DOMAIN,
     }
 })
+
+//create function able to upload the img to storage
+//use multer-google-storage to upload
