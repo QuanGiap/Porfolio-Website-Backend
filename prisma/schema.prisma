@@ -12,188 +12,123 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum MediaType {
-  FACE_BOOK
-  TWITTER
-  INSTAGRAM
-  LINKEDIN
-  LEETCODE
-  GITHUB
+enum ExperienceType {
+  VOLUNTEER
+  INTERNSHIP
+  JOB
 }
 
-enum BodyType {
-  INTRODUCTION
-  ABOUT
-  CONTACT_ME
+enum Type {
+  PORTFOLIO
+  EXPERICENCE
+  PROJECT
+  USER
   ACHIEVEMENT
-}
-
-enum ToolType {
-  REST_APIS
-  GRAPHQL
-  GRPC
-  KONG
-  DOCKER
-  KUBERNETES
-  JENKINS
-  CIRCLECI
-  TERRAFORM
-  GOOGLE_CLOUD_PLATFORM
-  AMAZON_WEB_SERVICES
-  MICROSOFT_AZURE
-  HEROKU
-  MONGODB
-  MYSQL
-  POSTGRESQL
-  REDIS
-  NODE_JS
-  DJANGO
-  FLASK
-  RUBY_ON_RAILS
-  REACT
-  ANGULAR
-  VUE_JS
-  BOOTSTRAP
-  MUI
-  ADOBE_PHOTOSHOP
-  ADOBE_ILLUSTRATOR
-  FIGMA
-  SKETCH
-  ADOBE_XD
-  CANVA
-  BEHANCE
-  DRIBBBLE
-  ADOBE_LIGHTROOM
-  ADOBE_PREMIERE_PRO
-  FINAL_CUT_PRO
-  DA_VINCI_RESOLVE
-  VSCO
-  FLICKR
-  VIMEO
-  YOUTUBE
-  WORDPRESS
-  MEDIUM
-  WIX
-  SQUARESPACE
-  GRAMMARLY
-  SCRIVENER
-  SUBSTACK
-  GHOST
-  PYTHON
-  R
-  JUPYTER_NOTEBOOKS
-  TABLEAU
-  POWER_BI
-  GOOGLE_DATA_STUDIO
-  APACHE_SPARK
-  SQL
-  GOOGLE_ANALYTICS
-  SEM_RUSH
-  AHREFS
-  HOOTSUITE
-  MAILCHIMP
-  HUBSPOT
-  BUFFER
-  ABLETON_LIVE
-  FL_STUDIO
-  PRO_TOOLS
-  LOGIC_PRO
-  SOUNDCLOUD
-  BANDCAMP
-  SPOTIFY_FOR_ARTISTS
-  AUTOCAD
-  REVIT
-  SKETCHUP
-  BLENDER
-  THREE_DS_MAX
-  RHINO
-  LUMION
-  ARCHITECTURE_PORTFOLIO
-  LINKEDIN
-  POWERPOINT
-  GOOGLE_SLIDES
-  MICROSOFT_EXCEL
-  ZOHO
-  SLACK
-  SALESFORCE
-  TRELLO
 }
 
 model User {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   first_name     String
+  user_name      String
   last_name      String
   email          String
   phone_number   String
+  img_id         String?
   password       String
   email_verified Boolean         @default(false)
   phone_verified Boolean         @default(false)
-  created_at     DateTime        @default(now())
-  media          Media[]
+  create_at      DateTime        @default(now())
+  last_update    DateTime        @default(now())
   code_verify    CodeVerify[]
   portfolio_data PortfolioData[]
+  WebsiteDesign  WebsiteDesign[]
 
+  @@unique([user_name])
   @@index([first_name, last_name])
   @@index([email])
   @@index([phone_number])
 }
 
 model PortfolioData {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  website_design_id String          @db.ObjectId
-  website_design    WebsiteDesign   @relation(fields: [website_design_id], references: [id])
-  user_id           String          @db.ObjectId
-  user              User            @relation(fields: [user_id], references: [id])
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  website_design_id String             @db.ObjectId
+  website_design    WebsiteDesign      @relation(fields: [website_design_id], references: [id])
+  user_id           String             @db.ObjectId
+  user              User               @relation(fields: [user_id], references: [id])
   project           Project[]
-  BodyPortfolio     BodyPortfolio[]
-  Achievement       Achievement[]
-
-  @@index([user_id])
+  achievement       Achievement[]
+  portfolio_content PortfolioContent[]
+  experience        Experience[]
+  portfolioImage    PortfolioImage[]
+  title             String
+  desciption        String
+  create_at     DateTime        @default(now())
+  last_update   DateTime        @default(now())
+  @@index([user_id, website_design_id])
 }
 
 model WebsiteDesign {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   url_website   String
   PortfolioData PortfolioData[]
+  create_at     DateTime        @default(now())
+  last_update   DateTime        @default(now())
+  creator_id    String          @db.ObjectId
+  creator       User            @relation(fields: [creator_id], references: [id])
+}
+
+model Experience {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String         @db.ObjectId
+  portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
+  title            String
+  description      String
+  img_ids          String[]
+  start_date       DateTime
+  end_date         DateTime?
+  company_url      String?
+  skills           String[]
+  role             String
+  create_at        DateTime       @default(now())
+  last_update      DateTime       @default(now())
+  type             ExperienceType
+
+  @@index([portfolioData_id])
 }
 
 model Project {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  portfolio_id String        @db.ObjectId
-  portfolio    PortfolioData @relation(fields: [portfolio_id], references: [id])
-  tool_type    ToolType
-  project_type String
-  title        String
-  description  String
-  url_imgs     String[]
-  start_date   DateTime
-  end_date     DateTime?
-  project_url  String
-  create_at    DateTime      @default(now())
-  last_update  DateTime      @default(now())
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String        @db.ObjectId
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  tools            String[]
+  project_type     String
+  title            String
+  description      String
+  skills           String[]
+  img_ids          String[]
+  start_date       DateTime
+  end_date         DateTime?
+  project_url      String?
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
+
+  @@index([portfolioData_id])
 }
 
 model Achievement {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  portfolio_id String        @db.ObjectId
-  portfolio    PortfolioData @relation(fields: [portfolio_id], references: [id])
-  title        String
-  description  String
-  url_imgs     String
-  start_date   DateTime
-  url          String
-  create_at    DateTime      @default(now())
-  last_update  DateTime      @default(now())
-}
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String        @db.ObjectId
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  title            String
+  description      String
+  img_ids          String[]
+  start_date       DateTime
+  end_date         DateTime
+  achievement_url  String?
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
 
-model Media {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  media_type  MediaType
-  user_id     String    @db.ObjectId
-  user        User      @relation(fields: [user_id], references: [id])
-  media_url   String
-  create_at   DateTime  @default(now())
-  last_update DateTime  @default(now())
+  @@index([portfolioData_id])
 }
 
 model CodeVerify {
@@ -207,12 +142,28 @@ model CodeVerify {
   @@index([create_at, user_id])
 }
 
-model BodyPortfolio {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  portfolio_id String        @db.ObjectId
-  portfolio    PortfolioData @relation(fields: [portfolio_id], references: [id])
-  title        String?
-  description  String?
-  img_url      String?
-  body_type    BodyType
+model PortfolioContent {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String        @db.ObjectId
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  content          String
+  place_id         String
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
+
+  @@index([portfolioData_id])
+}
+
+model PortfolioImage {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioData_id String        @db.ObjectId
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  image_id         String
+  image_name       String
+  image_size       Int
+  place_id         String
+  create_at        DateTime      @default(now())
+  last_update      DateTime      @default(now())
+
+  @@index([portfolioData_id])
 }
