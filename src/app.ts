@@ -6,11 +6,10 @@ import test_route from "./routers/test/testRoute";
 import portfolio_data_route from "./routers/PortfolioData/PortfolioData";
 const PORT = process.env.PORT || 3000;
 dotenv.config();
-
 const app = express()
 
 app.use(cors({
-    origin: 'http://example.com',
+    origin: '*',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }))
 app.use(express.static('public'))

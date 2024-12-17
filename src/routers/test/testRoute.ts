@@ -1,5 +1,6 @@
 import express from "express";
 import prisma from "../../tools/PrismaSingleton";
+import imgUploadMiddleware from "../../tools/ImageUpload";
 const test_route = express.Router();
 
 test_route.get('/',async (req,res)=>{
@@ -26,6 +27,8 @@ test_route.get('/',async (req,res)=>{
         data:{
             website_design_id:website_design.id,
             user_id:user_test.id,
+            title:'',
+            desciption:'',
         }
     })
     const arrLoopShort = [0,1,2,3,4];
@@ -97,5 +100,47 @@ test_route.get('/',async (req,res)=>{
     await Promise.all([projectsPromise,achievementPromise,expsPromise,portfolio_contentsPromise,portfolio_imgsPromise])
     return res.send('Test case created');
 })
+test_route.post('/image',imgUploadMiddleware,async (req,res)=>{
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).send("No files uploaded.");
+    }
+    // Array to store public URLs of uploaded files
+    const publicUrls:string[] = [];
+    
+    // Iterate through each file and upload to GCS
+    const files = req.files;
+    console.log(files);
+    // for (const file of req.files) {
+    //   const blob = storage.bucket(process.env.GCS_BUCKET||'').file(file.originalname);
+    //   const blobStream = blob.createWriteStream({
+    //     resumable: false,
+    //   });
 
+    //   await new Promise((resolve, reject) => {
+    //     blobStream.on("finish", async () => {
+    //       try {
+    //         // Make the file public
+    //         await blob.makePublic();
+
+    //         // Add the public URL to the array
+    //         const publicUrl = `https://storage.googleapis.com/${bucketName}/${blob.name}`;
+    //         publicUrls.push(publicUrl);
+
+    //         resolve(0);
+    //       } catch (err) {
+    //         reject(err);
+    //       }
+    //     });
+
+    //     blobStream.on("error", (err) => {
+    //       console.error(err);
+    //       reject(err);
+    //     });
+
+    //     blobStream.end(file.buffer);
+    //   });
+    // }
+    // // Respond with the public URLs
+    res.status(200).json({ message:'Image uploaded successfully' });
+})
 export default test_route;
