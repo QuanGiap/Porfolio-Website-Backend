@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../../tools/PrismaSingleton";
 import imgUploadMiddleware from "../../tools/ImageUpload";
+import multer from "multer";
 const test_route = express.Router();
 
 test_route.get('/',async (req,res)=>{
@@ -143,4 +144,19 @@ test_route.post('/image',imgUploadMiddleware,async (req,res)=>{
     // // Respond with the public URLs
     res.status(200).json({ message:'Image uploaded successfully' });
 })
+
+// test_route.use((err:any,req:Request,res:Response,next:NextFunction)=>{
+//     if (err instanceof multer.MulterError) {
+//         if (err.code === "LIMIT_UNEXPECTED_FILE") {
+//           // Handle the unexpected field error here
+//           console.log('sending res')
+//           return res.status(400).send({ error: 'Unexpected field, only accept "image"' });
+//         } else {
+//           // Handle other Multer errors here
+//           return res.status(400).json({ error: err.message });
+//         }
+//       } else if(err){
+//         next(err);
+//       } 
+// })
 export default test_route;

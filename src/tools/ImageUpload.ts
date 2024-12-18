@@ -35,13 +35,14 @@ const upload = multer({
 });
 function errorHandler(err:any,res:Response,next:NextFunction){
   if (err instanceof multer.MulterError) {
+    console.log(res)
     if (err.code === "LIMIT_UNEXPECTED_FILE") {
       // Handle the unexpected field error here
       console.log('sending res')
       return res.status(400).send({ error: 'Unexpected field, only accept "image"' });
     } else {
       // Handle other Multer errors here
-      return res.status(500).json({ error: err.message });
+      return res.status(400).json({ error: err.message });
     }
   } else if (err) {
     // Handle other errors here
@@ -50,8 +51,8 @@ function errorHandler(err:any,res:Response,next:NextFunction){
     next();
   }
 }
+const img_upload_hanlder = upload.single("image");
 function imgUploadMiddleware(req: Request, res: Response, next: NextFunction) {
-  const img_upload_hanlder = upload.array("images", 5);
-  img_upload_hanlder(req, res, (err)=>errorHandler(err,res,next));
+  img_upload_hanlder(req, res, (err)=>errorHandler(err,res,next))
 }
 export default imgUploadMiddleware;
