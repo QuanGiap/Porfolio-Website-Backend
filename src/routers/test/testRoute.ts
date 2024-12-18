@@ -1,9 +1,8 @@
 import express from "express";
 import prisma from "../../tools/PrismaSingleton";
-import imgUploadMiddleware from "../../tools/ImageUpload";
-import multer from "multer";
+import fileUpload from 'express-fileupload';
 const test_route = express.Router();
-
+test_route.use(fileUpload());
 test_route.get('/',async (req,res)=>{
     const user_count = await prisma.user.count();
     const user_test = await prisma.user.create({
@@ -101,8 +100,8 @@ test_route.get('/',async (req,res)=>{
     await Promise.all([projectsPromise,achievementPromise,expsPromise,portfolio_contentsPromise,portfolio_imgsPromise])
     return res.send('Test case created');
 })
-test_route.post('/image',imgUploadMiddleware,async (req,res)=>{
-    if (!req.files || req.files.length === 0) {
+test_route.post('/image',async (req,res)=>{
+    if (!req.files) {
         return res.status(400).send("No files uploaded.");
     }
     // Array to store public URLs of uploaded files
