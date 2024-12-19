@@ -4,13 +4,33 @@ import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
 import { user_id_schema, user_name_schema, website_id_schema } from "./schema";
 import { createErrRes } from "../../tools/ResTool";
+import { imgUploadMiddleware, uploadImgToStorage } from "../../tools/ImageManager";
+import { FileArray, UploadedFile } from "express-fileupload";
 const portfolio_data_route = express.Router();
 portfolio_data_route.post("/", verifyToken, (req, res) => {
   //create new content
   res.send("post content is not implemented");
 });
-portfolio_data_route.get("/", async (req, res) => {
-  const { website_id, user_name, user_id } = req.query;
+portfolio_data_route.post("/image/:place_id", verifyToken,...imgUploadMiddleware, (req, res) => {
+  //guarantee files not empty since checked
+  req.files = req.files as FileArray
+  if(Array.isArray(req.files.images)){
+    return createErrRes({res,error:'Only accept 1 image',status_code:413})
+  }
+  //guarantee 1 image file since checked
+  const file = req.files.images as UploadedFile;
+  const id = await uploadImgToStorage(file)
+  // prisma.portfolioImage.create({
+  //   data:{
+  //     id:
+  //   }
+  // })
+  //create new content
+  res.send("post content is not implemented");
+});
+portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
+  const { user_name, user_id } = req.query;
+  const website_id = req.params.website_id;
   if (!user_name && !user_id) {
     const err_msg = "Need user_name or user_id in query url";
     return createErrRes({ error: err_msg, res });
@@ -36,10 +56,21 @@ portfolio_data_route.get("/", async (req, res) => {
   if (!user) {
     return createErrRes({ error: "User not found", status_code: 404, res });
   }
-  const portfolio_data = await prisma.portfolioData.findMany({
+  const portfolio_data = await prisma.portfolioData.findFirst({
     where: {
       website_design_id: web_id,
       user_id: user.id,
+    },
+    select:{
+      title:true,
+      desciption:true,
+      project:true,
+      portfolio_content:true,
+      portfolio_image:true,
+      achievement:true,
+      experience:true,
+      create_at:true,
+      last_update:true,
     }
   });
   if (!portfolio_data) {
@@ -50,18 +81,19 @@ portfolio_data_route.get("/", async (req, res) => {
     });
   }
   //google storage url
-  //change this later after apply storage 
-  // const originWindowUrl = process.env.UNIVERSAL_DOMAIN;
-  // const imgsRes = portfolio_data.portfolioImage.map((img) => {
-  //   const { image_id } = img;
-  //   return {
-  //     img_url: `${originWindowUrl}/images/${image_id}.jpg`,
-  //     ...img,
-  //   };
-  // });
+  const imgsRes = portfolio_data.portfolio_image.map((img) => {
+    const { image_id } = img;
+    return {
+      img_url: `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${image_id}.jpg`,
+      ...img,
+    };
+  });
 
   return res.json({
-    portfolio_data:portfolio_data
+    portfolio_data:{
+      ...portfolio_data,
+      portfolio_image:imgsRes,
+    }
   });
 });
 export default portfolio_data_route;

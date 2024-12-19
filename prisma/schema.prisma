@@ -59,7 +59,7 @@ model PortfolioData {
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
   experience        Experience[]
-  portfolioImage    PortfolioImage[]
+  portfolio_image    PortfolioImage[]
   title             String
   desciption        String
   create_at     DateTime        @default(now())
