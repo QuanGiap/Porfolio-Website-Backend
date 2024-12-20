@@ -1,5 +1,6 @@
 import express from 'express';
 import verifyToken from '../../handler/verifyToken';
+import uploadManager, { checkValidImgMiddleware, checkValidJsonMiddleware } from '../../tools/UploadManager';
 const project_route = express.Router();
 
 project_route.get('/:user_id',(req,res)=>{
@@ -7,7 +8,8 @@ project_route.get('/:user_id',(req,res)=>{
         projects:[],
     })
 })
-project_route.post('/',verifyToken,(req,res)=>{
+project_route.post('/',verifyToken,uploadManager,checkValidJsonMiddleware,(...param)=>checkValidImgMiddleware(...param,false),(req,res)=>{
+    
     res.json({
         message:'Project created',
     }).status(202);
