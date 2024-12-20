@@ -1,9 +1,9 @@
 import express from "express";
 import prisma from "../../tools/PrismaSingleton";
 import {
-  uploadImgToStorage,
-  imgUploadMiddleware,
-} from "../../tools/ImageManager";
+  uploadManager,
+  checkValidJsonMiddleware
+} from "../../tools/UploadManager";
 const test_route = express.Router();
 test_route.get("/", async (req, res) => {
   const user_count = await prisma.user.count();
@@ -112,16 +112,13 @@ test_route.get("/", async (req, res) => {
   ]);
   return res.send("Test case created");
 });
-test_route.post("/image", ...imgUploadMiddleware, async (req, res) => {
+test_route.post("/image", uploadManager,checkValidJsonMiddleware, async (req, res) => {
   if (!req.files) {
     return res.status(400).send("No files uploaded.");
   }
-  // Array to store public URLs of uploaded files
-  const files = Array.isArray(req.files.images)
-    ? req.files.images
-    : [req.files.images];
-  // const imgsPromise = files.map(uploadImgToStorage)
-  // const ids = await Promise.all(imgsPromise);
+  // console.log(req.files);
+  // const json = JSON.parse((req.files.json as any).data);
+  console.log(req.body);
   res
     .status(200)
     .json({

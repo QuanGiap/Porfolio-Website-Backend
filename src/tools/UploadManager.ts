@@ -1,16 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import fileUpload, { UploadedFile } from 'express-fileupload';
 import { createErrRes } from "./ResTool";
-import storage from "./GoogleStorage";
-import generateFileId from "./IdGenerator";
-const MB_TO_BYTE = 1024*1024
+const MB_TO_BYTE = 1024*1024;
 const MAX_IMAGE_SIZE = 3 * MB_TO_BYTE; //3mb
 const MAX_IMAGE_COUNT = 9;
 
 /**
  * Create file uploader middle ware
  */
-const upload = fileUpload({
+const uploadManager = fileUpload({
   limits:{
     fileSize:MAX_IMAGE_SIZE,
     //add 1 in this will help check if user send more files than limit
@@ -29,7 +27,11 @@ const upload = fileUpload({
  *    in limit amount of files
  *    correct file type (jpg)
  */
-function checkValidMiddleware(req:Request,res:Response,next:NextFunction){
+function checkValidImgMiddleware(req:Request,res:Response,next:NextFunction,required=true){
+  if((!req.files || !req.files?.images) &&!required){
+    //image not found but not required
+    return next();
+  }
   //check if files exist or file is in the correct field
   if(!req.files || !req.files.images){
     const err = 'Images not found or not set in the right fields form. Only accept fields "images"'
@@ -55,48 +57,44 @@ function checkValidMiddleware(req:Request,res:Response,next:NextFunction){
       return createErrRes({res,error:err,status_code:400});
     }
   }
+  return next();
+}
+
+async function checkValidJsonMiddleware(req:Request,res:Response,next:NextFunction){
+  //check if files exist or file is in the correct field
+  if(!req.files || !req.files.json){
+    const err = 'Json not found or not set in the right fields form. Only accept fields "json"'
+    return createErrRes({res,error:err,status_code:400});
+  }
+  //auto convert to array if there is multiple json
+  const isArr = Array.isArray(req.files.json);
+  //check if only 1 json
+  if(isArr){
+    const err = 'Only upload 1 json at a time. Found '+(req.files.json as UploadedFile[]).length;
+    return createErrRes({res,error:err,status_code:413});
+  }
+  // check if files is json type
+  let json = req.files.json as UploadedFile;
+  console.log(json.size);
+  if(json.mimetype !== 'application/json'){
+    const err = '"json" field only accept json file'
+    return createErrRes({res,error:err,status_code:400});
+  }
+  //application/json will make json.data a string
+  req.body = JSON.parse(json.data as unknown as string);
   next();
 }
+
 
 /**
  * Upload img to google storage
  * @param file 
  * @returns id of the img
  */
-async function uploadImgToStorage(file:fileUpload.UploadedFile){
-  let publicUrl = '';
-  const bucket = process.env.GCS_BUCKET;
-  if(!bucket){
-    throw new Error('Google bucket missing');
-  }
-  const id = generateFileId();
-  const blob = storage.bucket(process.env.GCS_BUCKET||'').file(id+'.jpg');
-      const blobStream = blob.createWriteStream({
-            resumable: false,
-      });
-      await new Promise((resolve, reject) => {
-        blobStream.on("finish", async () => {
-          try {
-            // Make the file public
-            await blob.makePublic();
-            publicUrl = `https://storage.googleapis.com/${process.env.G}/${blob.name}`;
-            resolve(0);
-          } catch (err) {
-            reject(err);
-          }
-        });
 
-        blobStream.on("error", (err) => {
-          console.error(err);
-          reject(err);
-        });
-
-        blobStream.end(file.data);
-  })
-  return id;
-}
-const imgUploadMiddleware = [upload, checkValidMiddleware]
+export default uploadManager;
 export {
-  uploadImgToStorage,
-  imgUploadMiddleware
+  checkValidImgMiddleware,
+  uploadManager,
+  checkValidJsonMiddleware,
 }

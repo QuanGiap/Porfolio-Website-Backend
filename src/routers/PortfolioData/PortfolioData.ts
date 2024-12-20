@@ -2,32 +2,81 @@ import express from "express";
 import verifyToken from "../../handler/verifyToken";
 import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
-import { user_id_schema, user_name_schema, website_id_schema } from "./schema";
+import { post_content_schema, post_img_schema, user_id_schema, user_name_schema, website_id_schema } from "./schema";
 import { createErrRes } from "../../tools/ResTool";
-import { imgUploadMiddleware, uploadImgToStorage } from "../../tools/ImageManager";
+import {
+  uploadManager,
+  checkValidImgMiddleware,
+  checkValidJsonMiddleware,
+} from "../../tools/UploadManager";
 import { FileArray, UploadedFile } from "express-fileupload";
+import { uploadImgToStorage } from "../../tools/GoogleStorage";
 const portfolio_data_route = express.Router();
-portfolio_data_route.post("/", verifyToken, (req, res) => {
-  //create new content
-  res.send("post content is not implemented");
-});
-portfolio_data_route.post("/image/:place_id", verifyToken,...imgUploadMiddleware, (req, res) => {
-  //guarantee files not empty since checked
-  req.files = req.files as FileArray
-  if(Array.isArray(req.files.images)){
-    return createErrRes({res,error:'Only accept 1 image',status_code:413})
+portfolio_data_route.post("/", verifyToken, async (req, res) => {
+  //check valid input
+  const {err_message,parsed_data} = checkValidInput([post_content_schema],[req.body]);
+  if(err_message){
+    return createErrRes({...err_message,res});
   }
-  //guarantee 1 image file since checked
-  const file = req.files.images as UploadedFile;
-  const id = await uploadImgToStorage(file)
-  // prisma.portfolioImage.create({
-  //   data:{
-  //     id:
-  //   }
-  // })
+  const user_input = parsed_data[0];
+  //check if portfolioData exist base on id
+  const count = await prisma.portfolioData.count({where:{id:user_input.portfolioData_id}});
+  if(count===0){
+    return createErrRes({error:'portfolioData not found',res});
+  }
+  const result = await prisma.portfolioContent.create({
+    data:{
+      portfolioData_id:user_input.portfolioData_id,
+      content:user_input.content,
+      place_id:user_input.place_id
+    }
+  })
   //create new content
-  res.send("post content is not implemented");
+  res.send(result).status(201);
 });
+portfolio_data_route.post(
+  "/image",
+  verifyToken,
+  uploadManager,
+  checkValidImgMiddleware,
+  checkValidJsonMiddleware,
+  async (req, res) => {
+    //guarantee files not empty since checked
+    req.files = req.files as FileArray;
+    if (Array.isArray(req.files.images)) {
+      return createErrRes({
+        res,
+        error: "Only accept 1 image",
+        status_code: 413,
+      });
+    }
+    //guarantee 1 image file since checked
+    const file = req.files.images as UploadedFile;
+    const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);
+    if(err_message){
+      return createErrRes({...err_message,res});
+    }
+    const user_input = parsed_data[0];
+    //check if portfolioData exist base on id
+    const count = await prisma.portfolioData.count({where:{id:user_input.portfolioData_id}});
+    if(count===0){
+      return createErrRes({error:'portfolioData not found',res});
+    }
+    //upload image and create save img id
+    const id = await uploadImgToStorage(file);
+    const imgSave = await prisma.portfolioImage.create({
+      data:{
+        image_id:id,
+        image_name:file.name,
+        image_size:file.size,
+        portfolioData_id:user_input.portfolioData_id,
+        place_id:user_input.place_id,
+      }
+    })
+    //create new content
+    res.json(imgSave).status(201);
+  }
+);
 portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
   const { user_name, user_id } = req.query;
   const website_id = req.params.website_id;
@@ -61,17 +110,17 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
       website_design_id: web_id,
       user_id: user.id,
     },
-    select:{
-      title:true,
-      desciption:true,
-      project:true,
-      portfolio_content:true,
-      portfolio_image:true,
-      achievement:true,
-      experience:true,
-      create_at:true,
-      last_update:true,
-    }
+    select: {
+      title: true,
+      desciption: true,
+      project: true,
+      portfolio_content: true,
+      portfolio_image: true,
+      achievement: true,
+      experience: true,
+      create_at: true,
+      last_update: true,
+    },
   });
   if (!portfolio_data) {
     return createErrRes({
@@ -90,10 +139,10 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
   });
 
   return res.json({
-    portfolio_data:{
+    portfolio_data: {
       ...portfolio_data,
-      portfolio_image:imgsRes,
-    }
+      portfolio_image: imgsRes,
+    },
   });
 });
 export default portfolio_data_route;
