@@ -12,12 +12,17 @@ import {
 import { FileArray, UploadedFile } from "express-fileupload";
 import { uploadImgToStorage } from "../../tools/GoogleStorage";
 const portfolio_data_route = express.Router();
+
+/**
+ * Create new portfolio content base on content and portfolioData_id
+ */
 portfolio_data_route.post("/", verifyToken, async (req, res) => {
   //check valid input
-  const {err_message,parsed_data} = checkValidInput([post_content_schema],[req.body]);
-  if(err_message){
+  const {err_message,parsed_data} = checkValidInput([post_content_schema],[req.body||{}]);
+  if(err_message.error){
     return createErrRes({...err_message,res});
   }
+  console.log('Need to add user verify');
   const user_input = parsed_data[0];
   //check if portfolioData exist base on id
   const count = await prisma.portfolioData.count({where:{id:user_input.portfolioData_id}});
@@ -34,6 +39,10 @@ portfolio_data_route.post("/", verifyToken, async (req, res) => {
   //create new content
   res.send(result).status(201);
 });
+
+/**
+ * Create new portfolio content base on content and portfolioData_id
+ */
 portfolio_data_route.post(
   "/image",
   verifyToken,
@@ -50,10 +59,11 @@ portfolio_data_route.post(
         status_code: 413,
       });
     }
-    //guarantee 1 image file since checked
+  console.log('Need to add user verify');
+  //guarantee 1 image file since checked
     const file = req.files.images as UploadedFile;
     const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);
-    if(err_message){
+    if(err_message.error){
       return createErrRes({...err_message,res});
     }
     const user_input = parsed_data[0];
