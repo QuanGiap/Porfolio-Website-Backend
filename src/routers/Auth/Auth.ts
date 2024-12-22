@@ -12,7 +12,7 @@ const auth_route = express.Router();
 /**
  * Authenticating user with password and user name
  */
-auth_route.post("/sign_in/", async (req, res) => {
+auth_route.post("/sign_in", async (req, res) => {
     const {err_message,parsed_data} = checkValidInput([post_sign_in_schema],[req.body]);
     if(err_message.error){
         return createErrRes({...err_message,res});
@@ -43,7 +43,7 @@ auth_route.post("/sign_in/", async (req, res) => {
   res.json({message:'Sign in success',authenticate_token:token});
 });
 
-auth_route.post("/sign_up/", async (req, res) => {
+auth_route.post("/sign_up", async (req, res) => {
   const { err_message, parsed_data } = checkValidInput(
     [post_sign_up_schema],
     [req.body]
@@ -129,15 +129,15 @@ auth_route.post("/sign_up/", async (req, res) => {
   });
 });
 
-auth_route.post("/reset_pass/", (req, res) => {
+auth_route.post("/reset_pass", (req, res) => {
   res.send("reset_pass not implemented");
 });
 
-auth_route.post("/confirm/", (req, res) => {
+auth_route.post("/confirm", (req, res) => {
   res.send("confirm not implemented");
 });
 
-auth_route.post("/refresh_token/", (req, res) => {
+auth_route.post("/refresh_token", (req, res) => {
   res.send("refresh_token not implemented");
 });
 

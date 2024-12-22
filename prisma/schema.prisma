@@ -26,6 +26,12 @@ enum Type {
   ACHIEVEMENT
 }
 
+enum VerifyType {
+  PHONE
+  EMAIL
+  AUTHENTICATION
+}
+
 model User {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   first_name     String
@@ -139,7 +145,7 @@ model CodeVerify {
   create_at DateTime @default(now())
   used      Boolean  @default(false)
   code      String
-
+  codeType  VerifyType
   @@index([create_at, user_id])
 }
 
