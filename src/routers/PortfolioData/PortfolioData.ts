@@ -8,7 +8,7 @@ import {
   uploadManager,
   checkValidImgMiddleware,
   checkValidJsonMiddleware,
-} from "../../tools/UploadManager";
+} from "../../handler/UploadManager";
 import { FileArray, UploadedFile } from "express-fileupload";
 import { uploadImgToStorage } from "../../tools/GoogleStorage";
 const portfolio_data_route = express.Router();
@@ -94,9 +94,10 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
     const err_msg = "Need user_name or user_id in query url";
     return createErrRes({ error: err_msg, res });
   }
+  const user_name_parsed = (user_name as string).replace('+',' ');
   //user can get info by user name or user id
   let user_schema_check = user_id ? user_id_schema : user_name_schema;
-  let input_check = user_id || user_name;
+  let input_check = user_id || user_name_parsed;
   const { err_message, parsed_data } = checkValidInput(
     [website_id_schema, user_schema_check],
     [website_id, input_check]

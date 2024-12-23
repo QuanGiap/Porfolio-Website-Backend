@@ -3,7 +3,8 @@ import prisma from "../../tools/PrismaSingleton";
 import {
   uploadManager,
   checkValidJsonMiddleware
-} from "../../tools/UploadManager";
+} from "../../handler/UploadManager";
+import verifyToken from "../../handler/verifyToken";
 const test_route = express.Router();
 test_route.get("/", async (req, res) => {
   const user_count = await prisma.user.count();
@@ -14,9 +15,7 @@ test_route.get("/", async (req, res) => {
       user_name: "user_" + user_count,
       password: "passwordLength",
       email: "test_email" + user_count + "@gmail.com",
-      phone_number: "123456789",
       email_verified: true,
-      phone_verified: true,
     },
   });
   const website_design = await prisma.websiteDesign.create({
@@ -126,7 +125,9 @@ test_route.post("/image", uploadManager,checkValidJsonMiddleware, async (req, re
     //   files: files.map((file, i) => ({ ...file, imgId: ids[i] })),
     });
 });
-
+test_route.get("/test_verify_token",verifyToken, async (req, res) => {
+  return res.json({message:"Verify Token success",data:req.body.user});
+});
 // test_route.use((err:any,req:Request,res:Response,next:NextFunction)=>{
 //     if (err instanceof multer.MulterError) {
 //         if (err.code === "LIMIT_UNEXPECTED_FILE") {

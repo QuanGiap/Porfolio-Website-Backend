@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import fileUpload, { UploadedFile } from 'express-fileupload';
-import { createErrRes } from "./ResTool";
+import { createErrRes } from "../tools/ResTool";
 const MB_TO_BYTE = 1024*1024;
 const MAX_IMAGE_SIZE = 3 * MB_TO_BYTE; //3mb
 const MAX_IMAGE_COUNT = 9;

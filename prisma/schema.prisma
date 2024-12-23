@@ -27,9 +27,9 @@ enum Type {
 }
 
 enum VerifyType {
-  PHONE
   EMAIL
   AUTHENTICATION
+  RESET_PASS
 }
 
 model User {
@@ -38,12 +38,9 @@ model User {
   user_name      String
   last_name      String
   email          String
-  phone_number   String
-  area_phone_number   String
   img_id         String?
   password       String
   email_verified Boolean         @default(false)
-  phone_verified Boolean         @default(false)
   create_at      DateTime        @default(now())
   last_update    DateTime        @default(now())
   code_verify    CodeVerify[]
@@ -53,7 +50,6 @@ model User {
   @@unique([user_name])
   @@index([first_name, last_name])
   @@index([email])
-  @@index([phone_number])
 }
 
 model PortfolioData {
