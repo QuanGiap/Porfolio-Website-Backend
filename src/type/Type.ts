@@ -5,4 +5,5 @@ export interface UserType{
 export interface ConfirmUserType{
     user_id:string,
     code:string,
+    code_id:string,
 }

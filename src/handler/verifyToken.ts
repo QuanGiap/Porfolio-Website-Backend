@@ -10,7 +10,7 @@ async function verifyToken(req:Request,res:Response,next:NextFunction){
         return createErrRes({res,error:'No token found',status_code:403});
     }
     if(req.body?.user){
-        return createErrRes({res,error:'No allow to put user in body'});
+        return createErrRes({res,error:'Not allow to put user in body'});
     }
     const secret_key = process.env.AUTH_SECRET_KEY_TOKEN;
     if(!secret_key) throw new Error('No secret_key found in verify token')

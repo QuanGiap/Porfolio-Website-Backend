@@ -11,6 +11,7 @@ import {
 } from "../../handler/UploadManager";
 import { FileArray, UploadedFile } from "express-fileupload";
 import { uploadImgToStorage } from "../../tools/GoogleStorage";
+import { UserType } from "../../type/Type";
 const portfolio_data_route = express.Router();
 
 /**
@@ -22,12 +23,16 @@ portfolio_data_route.post("/", verifyToken, async (req, res) => {
   if(err_message.error){
     return createErrRes({...err_message,res});
   }
-  console.log('Need to add user verify');
+  //verify user (req.body.user exist from verifyToken)
+  const user = req.body.user as UserType;
   const user_input = parsed_data[0];
   //check if portfolioData exist base on id
-  const count = await prisma.portfolioData.count({where:{id:user_input.portfolioData_id}});
-  if(count===0){
+  const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolioData_id},select:{user_id:true}});
+  if(!portData){
     return createErrRes({error:'portfolioData not found',res});
+  }
+  if(portData.user_id !== user.id){
+    return createErrRes({error:'Forbidden',res,status_code:403});
   }
   const result = await prisma.portfolioContent.create({
     data:{
@@ -59,8 +64,8 @@ portfolio_data_route.post(
         status_code: 413,
       });
     }
-  console.log('Need to add user verify');
-  //guarantee 1 image file since checked
+    //verify user (req.body.user exist from verifyToken)
+    const user = req.body.user as UserType;
     const file = req.files.images as UploadedFile;
     const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);
     if(err_message.error){
@@ -68,9 +73,12 @@ portfolio_data_route.post(
     }
     const user_input = parsed_data[0];
     //check if portfolioData exist base on id
-    const count = await prisma.portfolioData.count({where:{id:user_input.portfolioData_id}});
-    if(count===0){
+    const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolioData_id},select:{user_id:true}});
+    if(!portData){
       return createErrRes({error:'portfolioData not found',res});
+    }
+    if(portData.user_id !== user.id){
+      return createErrRes({error:'Forbidden',res,status_code:403});
     }
     //upload image and create save img id
     const id = await uploadImgToStorage(file);

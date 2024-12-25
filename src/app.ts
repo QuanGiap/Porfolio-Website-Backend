@@ -11,7 +11,8 @@ const app = express()
 
 app.use(cors({
     origin: '*',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  allowedHeaders:['Content-Type', 'Authorization']
 }))
 app.use(express.json());
 app.use(express.static('public'))

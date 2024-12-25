@@ -8,6 +8,7 @@ import { createErrRes } from "../../tools/ResTool";
 import prisma from "../../tools/PrismaSingleton";
 import { UserType } from "../../type/Type";
 dotenv.config();
+const TIME_TOKEN_EXPIRED = '10h'
 const auth_route = express.Router();
 
 /**
@@ -52,7 +53,7 @@ auth_route.post("/sign_in", async (req, res) => {
   };
   //create jwt
   const token = jwt.sign(user_info, key, {
-    expiresIn: "10h",
+    expiresIn: TIME_TOKEN_EXPIRED,
   });
   res.json({ message: "Sign in success", authenticate_token: token });
 });
@@ -121,7 +122,7 @@ auth_route.post("/sign_up", async (req, res) => {
   });
   //return user data except hash password
   return res.status(201).json({
-    message: "User created, please veriy email and phonenumber",
+    message: "User created, please veriy email",
     user_id: user.id,
   });
 });
