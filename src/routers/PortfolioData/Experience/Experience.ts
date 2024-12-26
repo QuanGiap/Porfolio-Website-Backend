@@ -1,5 +1,5 @@
 import express from 'express';
-import verifyToken from '../../handler/verifyToken';
+import verifyToken from '../../handler/VerifyToken';
 const experience_route = express.Router();
 experience_route.post('/',verifyToken,(req,res)=>{
     //create new about

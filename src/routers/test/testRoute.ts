@@ -4,7 +4,7 @@ import {
   uploadManager,
   checkValidJsonMiddleware
 } from "../../handler/UploadManager";
-import verifyToken from "../../handler/verifyToken";
+import verifyToken from "../../handler/VerifyToken";
 const test_route = express.Router();
 test_route.get("/", async (req, res) => {
   const user_count = await prisma.user.count();
@@ -125,7 +125,10 @@ test_route.post("/image", uploadManager,checkValidJsonMiddleware, async (req, re
     //   files: files.map((file, i) => ({ ...file, imgId: ids[i] })),
     });
 });
-test_route.get("/test_verify_token",verifyToken, async (req, res) => {
+// test_route.get("/test_verify_token",verifyToken, async (req, res) => {
+//   return res.json({message:"Verify Token success",data:req.body.user});
+// });
+test_route.get("/test_thro_error",verifyToken, async (req, res) => {
   return res.json({message:"Verify Token success",data:req.body.user});
 });
 // test_route.use((err:any,req:Request,res:Response,next:NextFunction)=>{

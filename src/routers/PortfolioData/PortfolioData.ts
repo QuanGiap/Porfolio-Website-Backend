@@ -1,5 +1,5 @@
 import express from "express";
-import verifyToken from "../../handler/verifyToken";
+import verifyToken from "../../handler/VerifyToken";
 import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
 import { post_content_schema, post_img_schema, user_id_schema, user_name_schema, website_id_schema } from "./schema";
@@ -17,7 +17,7 @@ const portfolio_data_route = express.Router();
 /**
  * Create new portfolio content base on content and portfolioData_id
  */
-portfolio_data_route.post("/", verifyToken, async (req, res) => {
+portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   //check valid input
   const {err_message,parsed_data} = checkValidInput([post_content_schema],[req.body||{}]);
   if(err_message.error){
@@ -64,7 +64,8 @@ portfolio_data_route.post(
         status_code: 413,
       });
     }
-    //verify user (req.body.user exist from verifyToken)
+    //verify user
+    //guarantee req.body.user exist from (verifyToken)
     const user = req.body.user as UserType;
     const file = req.files.images as UploadedFile;
     const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);

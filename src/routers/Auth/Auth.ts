@@ -12,7 +12,7 @@ const TIME_TOKEN_EXPIRED = '10h'
 const auth_route = express.Router();
 
 /**
- * Authenticating user with password and user name
+ * Authentication route with password and user name
  */
 auth_route.post("/sign_in", async (req, res) => {
   const { err_message, parsed_data } = checkValidInput(
@@ -58,6 +58,9 @@ auth_route.post("/sign_in", async (req, res) => {
   res.json({ message: "Sign in success", authenticate_token: token });
 });
 
+/**
+ * Create new user 
+ */
 auth_route.post("/sign_up", async (req, res) => {
   const { err_message, parsed_data } = checkValidInput(
     [post_sign_up_schema],
@@ -115,8 +118,6 @@ auth_route.post("/sign_up", async (req, res) => {
       user_name,
       email,
       password: hashPass,
-      // temp add for test
-      email_verified: true,
     },
     select: { id: true },
   });
@@ -127,6 +128,9 @@ auth_route.post("/sign_up", async (req, res) => {
   });
 });
 
+/**
+ * Create password route
+ */
 auth_route.post("/request_reset_pass", (req, res) => {
   //check if email verified
   //create token to reset password
@@ -134,10 +138,17 @@ auth_route.post("/request_reset_pass", (req, res) => {
   res.send("reset_pass not implemented");
 });
 
-auth_route.get("/confirm", (req, res) => {
+/**
+ * Verify user email route
+ */
+auth_route.get("/email/verify", (req, res) => {
   const { token } = req.query;
   res.send("confirm not implemented");
 });
+
+/**
+ * Reset verified user password
+ */
 auth_route.post("/reset_pass", (req, res) => {
   res.send("reset_pass not implemented");
 });
