@@ -62,11 +62,12 @@ model PortfolioData {
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
   experience        Experience[]
-  portfolio_image    PortfolioImage[]
+  portfolio_image   PortfolioImage[]
   title             String
   desciption        String
-  create_at     DateTime        @default(now())
-  last_update   DateTime        @default(now())
+  create_at         DateTime           @default(now())
+  last_update       DateTime           @default(now())
+
   @@index([user_id, website_design_id])
 }
 
@@ -85,6 +86,7 @@ model Experience {
   portfolioData_id String         @db.ObjectId
   portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
   title            String
+  experience_type  String         @default("")
   description      String
   img_ids          String[]
   start_date       DateTime
@@ -104,7 +106,7 @@ model Project {
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   tools            String[]
-  project_type     String
+  project_type     String        @default("")
   title            String
   description      String
   skills           String[]
@@ -122,6 +124,7 @@ model Achievement {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  achievement_type String        @default("")
   title            String
   description      String
   img_ids          String[]
@@ -135,13 +138,14 @@ model Achievement {
 }
 
 model CodeVerify {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user_id   String   @db.ObjectId
-  user      User     @relation(fields: [user_id], references: [id])
-  create_at DateTime @default(now())
-  used      Boolean  @default(false)
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  user_id   String     @db.ObjectId
+  user      User       @relation(fields: [user_id], references: [id])
+  create_at DateTime   @default(now())
+  used      Boolean    @default(false)
   code      String
   codeType  VerifyType
+
   @@index([create_at, user_id])
 }
 

@@ -14,6 +14,14 @@ import { uploadImgToStorage } from "../../tools/GoogleStorage";
 import { UserType } from "../../type/Type";
 const portfolio_data_route = express.Router();
 
+
+/**
+ * Create new portoflioData
+ */
+portfolio_data_route.post('/',verifyToken,async (req,res)=>{
+    
+})
+
 /**
  * Create new portfolio content base on content and portfolioData_id
  */
@@ -47,6 +55,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
 
 /**
  * Create new portfolio content base on content and portfolioData_id
+ * only accept multipart/form-data content-type
  */
 portfolio_data_route.post(
   "/image",
@@ -96,6 +105,10 @@ portfolio_data_route.post(
     res.json(imgSave).status(201);
   }
 );
+
+/**
+ * Get user portfoliodata content including project, achievement, exprience, project
+ */
 portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
   const { user_name, user_id } = req.query;
   const website_id = req.params.website_id;
