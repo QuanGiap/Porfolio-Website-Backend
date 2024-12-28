@@ -2,7 +2,7 @@ import express from "express";
 import verifyToken from "../../handler/VerifyToken";
 import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
-import { post_content_schema, post_img_schema, user_id_schema, user_name_schema, website_id_schema } from "./schema";
+import { post_content_schema, post_img_schema, post_portData_schema, user_id_schema, user_name_schema, website_id_schema } from "./schema";
 import { createErrRes } from "../../tools/ResTool";
 import {
   uploadManager,
@@ -19,8 +19,25 @@ const portfolio_data_route = express.Router();
  * Create new portoflioData
  */
 portfolio_data_route.post('/',verifyToken,async (req,res)=>{
+    const {parsed_data,err_message} = checkValidInput([post_portData_schema],[req.body]);
+    if(err_message.error){
+      return createErrRes({...err_message,res});
+    }
+    const user_input = parsed_data[0];
+    //req.body.user exist becuase of verifyToken
+    const user = req.body.user as UserType
+    //check if user already create portData of based on website_id
+    const portDataCount = await prisma.portfolioData.count({
+      where:{
+        user_id:user.id,
+        website_design_id:user_input.website_id,
+      }
+    })
+    if(portDataCount!=0){
+      return createErrRes({error:'User already have this type of porfolio website',res});
+    }
     
-})
+  })
 
 /**
  * Create new portfolio content base on content and portfolioData_id

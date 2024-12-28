@@ -18,14 +18,6 @@ enum ExperienceType {
   JOB
 }
 
-enum Type {
-  PORTFOLIO
-  EXPERICENCE
-  PROJECT
-  USER
-  ACHIEVEMENT
-}
-
 enum VerifyType {
   EMAIL
   AUTHENTICATION

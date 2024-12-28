@@ -3,10 +3,23 @@ export default function generateFileId() {
     const timestamp = Date.now(); 
   
     // Adding a random component to ensure uniqueness
-    const randomString = Math.random().toString(36).substr(2, 9); 
+    const randomString = Math.random().toString(36).substring(7); 
   
     // Combining the timestamp and random string to create the ID
     const fileId = `${timestamp}-${randomString}`; 
-  
+    
     return fileId;
+}
+
+export function isValidId(ids:string){
+    try{
+        const testId = generateFileId();
+        if(ids.length != testId.length) return false;
+        const id_split = ids.split('-');
+        if(id_split.length!==2) return false;
+        return !Number.isNaN(id_split[0]);        ;
+    }catch(err){
+        console.log(err);
+        return false;
+    }
 }

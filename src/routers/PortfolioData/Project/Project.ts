@@ -1,6 +1,6 @@
 import express from 'express';
-import verifyToken from '../../handler/VerifyToken';
-import uploadManager, { checkValidImgMiddleware, checkValidJsonMiddleware } from '../../handler/UploadManager';
+import verifyToken from '../../../handler/VerifyToken';
+import uploadManager, { checkValidImgMiddleware, checkValidJsonMiddleware } from '../../../handler/UploadManager';
 const project_route = express.Router();
 
 project_route.get('/:user_id',(req,res)=>{
