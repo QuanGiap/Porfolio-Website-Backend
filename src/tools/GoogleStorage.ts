@@ -20,7 +20,7 @@ async function uploadImgToStorage(file:UploadedFile){
     throw new Error('Google bucket missing');
   }
   const id = generateFileId();
-  const blob = storage.bucket(process.env.GCS_BUCKET||'').file(id+'.jpg');
+  const blob = storage.bucket(bucket).file(id+'.jpg');
       const blobStream = blob.createWriteStream({
             resumable: false,
       });
@@ -44,7 +44,17 @@ async function uploadImgToStorage(file:UploadedFile){
   })
   return id;
 }
+
+async function removeImgFromStorage(img_id:string){
+  const bucket = process.env.GCS_BUCKET;
+  if(!bucket){
+    throw new Error('Google bucket missing');
+  }
+  const result = await storage.bucket(bucket).file(img_id+'.jpg').delete();
+  return result;
+}
 export default storage;
 export {
-  uploadImgToStorage
+  uploadImgToStorage,
+  removeImgFromStorage,
 }

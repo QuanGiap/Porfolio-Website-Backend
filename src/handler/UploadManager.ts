@@ -75,7 +75,6 @@ async function checkValidJsonMiddleware(req:Request,res:Response,next:NextFuncti
   }
   // check if files is json type
   let json = req.files.json as UploadedFile;
-  console.log(json.size);
   if(json.mimetype !== 'application/json'){
     const err = '"json" field only accept json file'
     return createErrRes({res,error:err,status_code:400});
