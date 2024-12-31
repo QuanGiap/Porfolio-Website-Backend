@@ -27,7 +27,7 @@ const uploadManager = fileUpload({
  *    in limit amount of files
  *    correct file type (jpg)
  */
-function checkValidImgMiddleware(req:Request,res:Response,next:NextFunction,required=true){
+function checkValidImgMiddleware(req:Request,res:Response,next:NextFunction,required=true,arr_included=true){
   if((!req.files || !req.files?.images) &&!required){
     //image not found but not required
     return next();
@@ -37,15 +37,18 @@ function checkValidImgMiddleware(req:Request,res:Response,next:NextFunction,requ
     const err = 'Images not found or not set in the right fields form. Only accept fields "images"'
     return createErrRes({res,error:err,status_code:400});
   }
-  const isArr = Array.isArray(req.files.images);
+  const is_arr = Array.isArray(req.files.images);
+  if(is_arr && !arr_included){
+    return createErrRes({res,error:'Only allow 1 image'});
+  }
   //check if number of files is in the limit count
-  if(isArr && (req.files.images as UploadedFile[]).length > MAX_IMAGE_COUNT){
+  if(is_arr && (req.files.images as UploadedFile[]).length > MAX_IMAGE_COUNT){
     const err = 'Only upload '+MAX_IMAGE_COUNT+' at a time';
     return createErrRes({res,error:err,status_code:413});
   }
   // check if files is jpg img
   let imgs = [];
-  if(isArr){
+  if(is_arr){
     imgs = (req.files.images as UploadedFile[]);
   }else{
     imgs.push(req.files.images as UploadedFile)
@@ -67,9 +70,9 @@ async function checkValidJsonMiddleware(req:Request,res:Response,next:NextFuncti
     return createErrRes({res,error:err,status_code:400});
   }
   //auto convert to array if there is multiple json
-  const isArr = Array.isArray(req.files.json);
+  const is_arr = Array.isArray(req.files.json);
   //check if only 1 json
-  if(isArr){
+  if(is_arr){
     const err = 'Only upload 1 json at a time. Found '+(req.files.json as UploadedFile[]).length;
     return createErrRes({res,error:err,status_code:413});
   }

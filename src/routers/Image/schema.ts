@@ -27,3 +27,29 @@ export const post_img_schema = zod.object({
   },
   { required_error: "Json file not found" }
 );
+export const post_img_content_schema = zod.object(
+  {
+    portfolio_data_id: zod
+      .string({
+        required_error: "portfolio_data_id is missing in json",
+        invalid_type_error: "portfolio_data_id need to be a string",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "portfolio_data_id need to be valid ObjectID"),
+    place_id: zod.string({
+      required_error: "place_id is missing in json",
+      invalid_type_error: "place_id need to be a string",
+    }),
+  },
+  { required_error: "Body data not found" }
+);
+export const patch_img_content_schema = zod.object(
+  {
+    id: zod
+      .string({
+        required_error: "id is missing in json",
+        invalid_type_error: "id need to be a string",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "id need to be valid ObjectID"),
+  },
+  { required_error: "Body data not found" }
+);
