@@ -40,7 +40,7 @@ portfolio_data_route.post('/',verifyToken,async (req,res)=>{
   })
 
 /**
- * Create new portfolio content base on content and portfolioData_id
+ * Create new portfolio content base on content and portfolio_data_id
  */
 portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   //check valid input
@@ -52,7 +52,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   const user = req.body.user as UserType;
   const user_input = parsed_data[0];
   //check if portfolioData exist base on id
-  const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolioData_id},select:{user_id:true}});
+  const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
   if(!portData){
     return createErrRes({error:'portfolioData not found',res});
   }
@@ -61,7 +61,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   }
   const result = await prisma.portfolioContent.create({
     data:{
-      portfolioData_id:user_input.portfolioData_id,
+      portfolioData_id:user_input.portfolio_data_id,
       content:user_input.content,
       place_id:user_input.place_id
     }
@@ -71,7 +71,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
 });
 
 /**
- * Create new portfolio content base on content and portfolioData_id
+ * Create new portfolio content base on content and portfolio_data_id
  * only accept multipart/form-data content-type
  */
 portfolio_data_route.post(
@@ -100,7 +100,7 @@ portfolio_data_route.post(
     }
     const user_input = parsed_data[0];
     //check if portfolioData exist base on id
-    const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolioData_id},select:{user_id:true}});
+    const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
     if(!portData){
       return createErrRes({error:'portfolioData not found',res});
     }
@@ -114,7 +114,7 @@ portfolio_data_route.post(
         image_id:id,
         image_name:file.name,
         image_size:file.size,
-        portfolioData_id:user_input.portfolioData_id,
+        portfolioData_id:user_input.portfolio_data_id,
         place_id:user_input.place_id,
       }
     })

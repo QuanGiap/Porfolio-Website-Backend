@@ -211,7 +211,6 @@ image_route.patch(
         image_size:file.size,
       }
     })
-    //create new content
     res.json(imgSave).status(201);
   }
 );
