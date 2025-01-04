@@ -5,6 +5,7 @@ import user_route from "../src/routers/User/User";
 import test_route from "./routers/test/testRoute";
 import portfolio_data_route from "./routers/PortfolioData/PortfolioData";
 import auth_route from "./routers/Auth/Auth";
+import image_route from "./routers/Image/Image";
 const PORT = process.env.PORT || 3000;
 dotenv.config();
 const app = express()
@@ -16,12 +17,13 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(express.static('public'))
-app.use('/user/',user_route)
-app.use('/auth/',auth_route)
-app.use('/test',test_route);
+app.use('/image_route',image_route);
+app.use('/user',user_route)
+app.use('/auth',auth_route)
+// app.use('/test',test_route);
 app.use('/portfolio_content',portfolio_data_route);
 app.get('/', function (req:Request, res:Response) {
-  res.json({msg: 'This is CORS-enabled only for example.com!'})
+  res.json({msg: 'This is CORS-enabled to every website!'})
 })
 
 app.listen(PORT, function () {

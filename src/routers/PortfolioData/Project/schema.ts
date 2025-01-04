@@ -36,13 +36,14 @@ export const post_schema = zod.object(
       .datetime({
         offset: true,
         message: "Invalid end_date, only accept ISO date",
-      }),
-    company_url: zod
-      .string({
-        invalid_type_error: "company_url need to be a string",
       })
-      .url("company_url need to be an valid url")
-      .default(""),
+      .optional(),
+    project_url: zod
+      .string({
+        invalid_type_error: "project_url need to be a string",
+      })
+      .url("project_url need to be an valid url")
+      .optional(),
     skills: zod
       .array(
         zod.string({
@@ -51,21 +52,17 @@ export const post_schema = zod.object(
         { invalid_type_error: "skills should be string array" }
       )
       .default([]),
-    role: zod.string({
-      required_error: "role is missing in body",
-      invalid_type_error: "role need to be a string",
-    }),
-    experience_type: zod
+    project_type: zod
       .string({
-        invalid_type_error: "title need to be a string",
+        invalid_type_error: "project_type need to be a string",
       })
       .default(""),
-    type: zod.nativeEnum(ExperienceType, {
-      required_error: "experience_type is required in body",
-      invalid_type_error:
-        "experience_type is a string and only accept: " +
-        Object.values(ExperienceType).join(", "),
-    }),
+    tools: zod.array(
+      zod.string({
+        invalid_type_error: "Element in tools need to be a string",
+      }),
+      { invalid_type_error: "tools should be string array" }
+    ),
   },
   { required_error: "Body not found" }
 );
@@ -78,72 +75,59 @@ export const patch_schema = zod.object(
         invalid_type_error: "id need to be an ObjectID string",
       })
       .regex(/^[a-fA-F0-9]{24}$/, "id need to be valid ObjectID"),
-    title: zod
-      .string({
+      title: zod.string({
         required_error: "title is missing in body",
         invalid_type_error: "title need to be a string",
-      })
-      .optional(),
-    description: zod
-      .string({
+      }).optional(),
+      description: zod.string({
         required_error: "description is missing in body",
         invalid_type_error: "description need to be a string",
-      })
-      .optional(),
-    start_date: zod
-      .string({
-        required_error: "start_date is missing in body",
-        invalid_type_error: "start_date need to be a string",
-      })
-      .datetime({
-        offset: true,
-        message: "Invalid start_date, only accept ISO date",
-      })
-      .optional(),
-    end_date: zod
-      .string({
-        required_error: "end_date is missing in body",
-        invalid_type_error: "end_date need to be a string",
-      })
-      .datetime({
-        offset: true,
-        message: "Invalid end_date, only accept ISO date",
-      })
-      .optional(),
-    company_url: zod
-      .string({
-        invalid_type_error: "company_url need to be a string",
-      })
-      .url("company_url need to be an valid url")
-      .optional(),
-    skills: zod
-      .array(
+      }).optional(),
+      start_date: zod
+        .string({
+          required_error: "start_date is missing in body",
+          invalid_type_error: "start_date need to be a string",
+        })
+        .datetime({
+          offset: true,
+          message: "Invalid start_date, only accept ISO date",
+        }).optional(),
+      end_date: zod
+        .string({
+          required_error: "end_date is missing in body",
+          invalid_type_error: "end_date need to be a string",
+        })
+        .datetime({
+          offset: true,
+          message: "Invalid end_date, only accept ISO date",
+        })
+        .optional(),
+      project_url: zod
+        .string({
+          invalid_type_error: "project_url need to be a string",
+        })
+        .url("project_url need to be an valid url")
+        .optional(),
+      skills: zod
+        .array(
+          zod.string({
+            invalid_type_error: "Element in skills need to be a string",
+          }),
+          { invalid_type_error: "skills should be string array" }
+        )
+        .optional(),
+      project_type: zod
+        .string({
+          invalid_type_error: "project_type need to be a string",
+        })
+        .optional(),
+      tools: zod.array(
         zod.string({
-          invalid_type_error: "Element in skills need to be a string",
+          invalid_type_error: "Element in tools need to be a string",
         }),
-        { invalid_type_error: "skills should be string array" }
-      )
-      .default([]),
-    role: zod
-      .string({
-        required_error: "role is missing in body",
-        invalid_type_error: "role need to be a string",
-      })
-      .optional(),
-    experience_type: zod
-      .string({
-        invalid_type_error: "title need to be a string",
-      })
-      .default(""),
-    type: zod
-      .nativeEnum(ExperienceType, {
-        required_error: "experience_type is required in body",
-        invalid_type_error:
-          "experience_type is a string and only accept: " +
-          Object.values(ExperienceType).join(", "),
-      })
-      .optional(),
-  },
+        { invalid_type_error: "tools should be string array" }
+      ).optional(),
+    },
   { required_error: "Body not found" }
 );
 export const delete_schema = zod.object(
@@ -182,6 +166,6 @@ export const user_name_schema = zod.string({
 //     project_url      String?
 //     create_at        DateTime      @default(now())
 //     last_update      DateTime      @default(now())
-  
+
 //     @@index([portfolioData_id])
 //   }

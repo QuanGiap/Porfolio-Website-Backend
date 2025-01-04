@@ -12,6 +12,9 @@ import {
 import { FileArray, UploadedFile } from "express-fileupload";
 import { uploadImgToStorage } from "../../tools/GoogleStorage";
 import { UserType } from "../../type/Type";
+import achievement_route from "./Achieviement/Achieviement";
+import experience_route from "./Experience/Experience";
+import project_route from "./Project/Project";
 const portfolio_data_route = express.Router();
 
 
@@ -195,4 +198,9 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
     },
   });
 });
+
+portfolio_data_route.use('/achievement',achievement_route);
+portfolio_data_route.use('/experience',experience_route);
+portfolio_data_route.use('/project',project_route);
+
 export default portfolio_data_route;

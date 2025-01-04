@@ -4,14 +4,26 @@ import uploadManager, {
   checkValidImgMiddleware,
   checkValidJsonMiddleware,
 } from "../../handler/UploadManager";
-import { removeImgFromStorage, uploadImgToStorage } from "../../tools/GoogleStorage";
+import {
+  removeImgFromStorage,
+  uploadImgToStorage,
+} from "../../tools/GoogleStorage";
 import { checkValidInput } from "../../tools/SchemaTool";
-import { post_img_schema,post_img_content_schema, patch_img_content_schema } from "./schema";
+import {
+  post_img_schema,
+  post_img_content_schema,
+  patch_img_content_schema,
+} from "./schema";
 import fileUpload from "express-fileupload";
 import prisma from "../../tools/PrismaSingleton";
 import { createErrRes } from "../../tools/ResTool";
 import { UserType } from "../../type/Type";
-import { checkIdsImage, getIdsImageAndCheckOwner,updateImageIdsToDB,uploadAndRemoveImage } from "./tool";
+import {
+  checkIdsImage,
+  getIdsImageAndCheckOwner,
+  updateImageIdsToDB,
+  uploadAndRemoveImage,
+} from "./tool";
 import { ImageType } from "../../Enum/Enum";
 const image_route = express.Router();
 
@@ -53,16 +65,20 @@ image_route.post(
       if (Array.isArray(files.images)) img_files = files.images;
       else img_files.push(files.images);
     }
-    //count how many new img need to insert 
+    //count how many new img need to insert
     //This help check if number of new image is equal number of element 'NI' in user input
     const new_imgs_count = user_input.image_ids.reduce((count, cur) => {
       if (cur === "NI") return count + 1;
       return count;
     }, 0);
-    if(new_imgs_count !== img_files.length){
-        return createErrRes({error:'Amount of new file images is not equal to amount of "NI" element in user_input',res})
+    if (new_imgs_count !== img_files.length) {
+      return createErrRes({
+        error:
+          'Amount of new file images is not equal to amount of "NI" element in user_input',
+        res,
+      });
     }
-    
+
     const getResult = await getIdsImageAndCheckOwner(parsed_data[0]);
     //check if type data exist
     if (!getResult.owner_id) {
@@ -88,129 +104,175 @@ image_route.post(
       return createErrRes({ error: errors[0], errors, res });
     }
 
-    const updated_img_id = await uploadAndRemoveImage(user_input.image_ids,img_files,remove_image_ids);
+    const updated_img_id = await uploadAndRemoveImage(
+      user_input.image_ids,
+      img_files,
+      remove_image_ids
+    );
 
     //update img_ids to database
-    await updateImageIdsToDB(updated_img_id,user_input.id,user_input.type);
+    await updateImageIdsToDB(updated_img_id, user_input.id, user_input.type);
 
     return res.json(`Insert image success`).status(201);
   }
 );
 
-image_route.post('/user',verifyToken,(...params)=>checkValidImgMiddleware(...params,true,false),async (req,res)=>{
-  //req.body.user from verify token
-  const user = req.body.user as UserType;
-  //only 1 image is accepted, it checked 
-  const img_file = (req.files as fileUpload.FileArray).images as fileUpload.UploadedFile;
-  //get img_id from user
-  const user_data = await prisma.user.findFirst({where:{
-    id:user.id,
-  },
-  select:{
-    img_id:true,
-  }})
-  //check if user data found
-  if(!user_data){
-    return createErrRes({res,error:'User data not found',status_code:404});
+image_route.post(
+  "/user",
+  verifyToken,
+  (...params) => checkValidImgMiddleware(...params, true, false),
+  async (req, res) => {
+    //req.body.user from verify token
+    const user = req.body.user as UserType;
+    //only 1 image is accepted, it checked
+    const img_file = (req.files as fileUpload.FileArray)
+      .images as fileUpload.UploadedFile;
+    //get img_id from user
+    const user_data = await prisma.user.findFirst({
+      where: {
+        id: user.id,
+      },
+      select: {
+        img_id: true,
+      },
+    });
+    //check if user data found
+    if (!user_data) {
+      return createErrRes({
+        res,
+        error: "User data not found",
+        status_code: 404,
+      });
+    }
+    //if img_id exist delete that image from storage
+    const deletePromise = user_data.img_id
+      ? removeImgFromStorage(user_data.img_id)
+      : new Promise((resolve) => resolve(0));
+    //upload new image to storage
+    const uploadPromise = uploadImgToStorage(img_file);
+    const [new_img_id] = await Promise.all([uploadPromise, deletePromise]);
+    //update user_data img_id
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        img_id: new_img_id,
+      },
+    });
+    return res.json({ message: "Update image success" }).status(200);
   }
-  //if img_id exist delete that image from storage
-  const deletePromise = user_data.img_id? removeImgFromStorage(user_data.img_id):new Promise((resolve)=>resolve(0));
-  //upload new image to storage
-  const uploadPromise = uploadImgToStorage(img_file);
-  const [new_img_id] = await Promise.all([uploadPromise,deletePromise]);
-  //update user_data img_id
-  await prisma.user.update({where:{
-    id:user.id,
-  },data:{
-    img_id:new_img_id,
-  }})
-  return res.json({message:'Update image success'}).status(200);
-})
+);
 
 image_route.post(
-  "/image",
+  "/content-image",
   verifyToken,
   uploadManager,
-  (...params)=>checkValidImgMiddleware(...params,true,false),
+  (...params) => checkValidImgMiddleware(...params, true, false),
   checkValidJsonMiddleware,
   async (req, res) => {
     //guarantee req.body.user exist from (verifyToken)
     const user = req.body.user as UserType;
-    const file = (req.files as fileUpload.FileArray).images as fileUpload.UploadedFile;
-    const {err_message,parsed_data} = checkValidInput([post_img_content_schema],[req.body]);
-    if(err_message.error){
-      return createErrRes({...err_message,res});
+    const file = (req.files as fileUpload.FileArray)
+      .images as fileUpload.UploadedFile;
+    const { err_message, parsed_data } = checkValidInput(
+      [post_img_content_schema],
+      [req.body]
+    );
+    if (err_message.error) {
+      return createErrRes({ ...err_message, res });
     }
     const user_input = parsed_data[0];
     //check if portfolioData exist base on id
-    const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
-    if(!portData){
-      return createErrRes({error:'portfolio data not found',res,status_code:404});
+    const portData = await prisma.portfolioData.findFirst({
+      where: { id: user_input.portfolio_data_id },
+      select: { user_id: true },
+    });
+    if (!portData) {
+      return createErrRes({
+        error: "portfolio data not found",
+        res,
+        status_code: 404,
+      });
     }
     //verify owner
-    if(portData.user_id !== user.id){
-      return createErrRes({error:'Forbidden',res,status_code:403});
+    if (portData.user_id !== user.id) {
+      return createErrRes({ error: "Forbidden", res, status_code: 403 });
     }
     //upload image and create save img id
     const id = await uploadImgToStorage(file);
     const imgSave = await prisma.portfolioImage.create({
-      data:{
-        image_id:id,
-        image_name:file.name,
-        image_size:file.size,
-        portfolioData_id:user_input.portfolio_data_id,
-        place_id:user_input.place_id,
-      }
-    })
+      data: {
+        image_id: id,
+        image_name: file.name,
+        image_size: file.size,
+        portfolioData_id: user_input.portfolio_data_id,
+        place_id: user_input.place_id,
+      },
+    });
     //create new content
     res.json(imgSave).status(201);
   }
 );
 
 image_route.patch(
-  "/image",
+  "/content-image",
   verifyToken,
   uploadManager,
-  (...params)=>checkValidImgMiddleware(...params,true,false),
+  (...params) => checkValidImgMiddleware(...params, true, false),
   checkValidJsonMiddleware,
   async (req, res) => {
     //guarantee req.body.user exist from (verifyToken)
     const user = req.body.user as UserType;
-    const file = (req.files as fileUpload.FileArray).images as fileUpload.UploadedFile;
-    const {err_message,parsed_data} = checkValidInput([patch_img_content_schema],[req.body]);
-    if(err_message.error){
-      return createErrRes({...err_message,res});
+    const file = (req.files as fileUpload.FileArray)
+      .images as fileUpload.UploadedFile;
+    const { err_message, parsed_data } = checkValidInput(
+      [patch_img_content_schema],
+      [req.body]
+    );
+    if (err_message.error) {
+      return createErrRes({ ...err_message, res });
     }
     const user_input = parsed_data[0];
     //check if portfolioData exist base on id
-    const img_content_data = await prisma.portfolioImage.findFirst({where:{id:user_input.id},select:{image_id:true,portfolioData:{
-      select:{
-        user_id:true,
-      }
-    }}});
-    if(!img_content_data){
-      return createErrRes({error:'Image data not found',res,status_code:404});
+    const img_content_data = await prisma.portfolioImage.findFirst({
+      where: { id: user_input.id },
+      select: {
+        image_id: true,
+        portfolioData: {
+          select: {
+            user_id: true,
+          },
+        },
+      },
+    });
+    if (!img_content_data) {
+      return createErrRes({
+        error: "Image data not found",
+        res,
+        status_code: 404,
+      });
     }
     //verify owner
-    if(img_content_data.portfolioData.user_id !== user.id){
-      return createErrRes({error:'Forbidden',res,status_code:403});
+    if (img_content_data.portfolioData.user_id !== user.id) {
+      return createErrRes({ error: "Forbidden", res, status_code: 403 });
     }
     //delete that image from storage
     const deletePromise = removeImgFromStorage(img_content_data.image_id);
     //upload new image to storage
     const uploadPromise = uploadImgToStorage(file);
-    const [new_img_id] = await Promise.all([uploadPromise,deletePromise]);
-  
+    const [new_img_id] = await Promise.all([uploadPromise, deletePromise]);
+
     const imgSave = await prisma.portfolioImage.update({
-      where:{
-        id:user_input.id,
+      where: {
+        id: user_input.id,
       },
-      data:{
-        image_id:new_img_id,
-        image_name:file.name,
-        image_size:file.size,
-      }
-    })
+      data: {
+        image_id: new_img_id,
+        image_name: file.name,
+        image_size: file.size,
+      },
+    });
     res.json(imgSave).status(201);
   }
 );

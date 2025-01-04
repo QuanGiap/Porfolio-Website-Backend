@@ -60,6 +60,7 @@ experience_route.patch('/',verifyToken,async (req,res)=>{
         },
         data:{
             ...user_input,
+            last_update:new Date().toISOString(),
         }
     })
     return res.json({message:"Update success",experience})
@@ -92,16 +93,20 @@ experience_route.delete('/',verifyToken,async (req,res)=>{
 })
 
 /**
- * Get achievement base on user_id or user_name 
+ * Get experiences base on user_id or user_name 
  */
 experience_route.get('/',async (req,res)=>{
     const {user_name,user_id,website_id} = req.query;
     let cur_user_id = user_id;
+    const errors = []
     if(!user_name&&!user_id){
-        return createErrRes({error:'Require user_name or user_id in query',res});
+        errors.push('Require user_name or user_id in query');
     }
     if(!website_id){
-        return createErrRes({error:'Require website_id in query',res});
+        errors.push('Require website_id in query');
+    }
+    if(errors.length!==0){
+        return createErrRes({error:errors[0],errors,res});
     }
     if(!user_id){
         const user = await prisma.user.findFirst({where:{
@@ -115,7 +120,7 @@ experience_route.get('/',async (req,res)=>{
         }
         cur_user_id = user.id;
     }
-    const achievements = await prisma.experience.findMany({
+    const experiences = await prisma.experience.findMany({
         where:{
             portfolioData:{
                 user_id:cur_user_id as string,
@@ -123,6 +128,6 @@ experience_route.get('/',async (req,res)=>{
             }
         },
     })
-    return res.json({achievements});
+    return res.json({experiences});
 })
 export default experience_route;

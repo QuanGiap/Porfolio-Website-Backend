@@ -7,12 +7,13 @@ import { UserType } from '../../../type/Type';
 import { delete_schema, patch_schema, post_schema } from './schema';
 import checkOwner from '../../../tools/IsOwner';
 import { DataType } from '../../../Enum/Enum';
-const experience_route = express.Router();
+const project_route = express.Router();
 
 /**
- * Create new experience 
+ * Create new project 
  */
-experience_route.post('/',verifyToken,async (req,res)=>{
+project_route.post('/',verifyToken,async (req,res)=>{
+    //req.body.user from verifyToken
     const user = req.body.user as UserType;
     const {parsed_data,err_message} = checkValidInput([post_schema],[req.body]);
     if(err_message.error){
@@ -27,19 +28,19 @@ experience_route.post('/',verifyToken,async (req,res)=>{
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const experience = await prisma.experience.create({
+    const project = await prisma.project.create({
         data:{
             ...user_input,
             portfolioData_id:user_input.portfolio_data_id,
         }
     })
-    return res.json({message:"Create success",experience})
+    return res.json({message:"Create success",project})
 })
 
 /**
- * Update experience base on id 
+ * Update project base on id 
  */
-experience_route.patch('/',verifyToken,async (req,res)=>{
+project_route.patch('/',verifyToken,async (req,res)=>{
     const user = req.body.user as UserType;
     const {parsed_data,err_message} = checkValidInput([patch_schema],[req.body]);
     if(err_message.error){
@@ -47,28 +48,29 @@ experience_route.patch('/',verifyToken,async (req,res)=>{
     }
     const user_input = parsed_data[0];
     // check owner
-    const resultCheckOwn = await checkOwner(DataType.EXPERICENCE,user_input.id,user.id);
+    const resultCheckOwn = await checkOwner(DataType.PROJECT,user_input.id,user.id);
     if(!resultCheckOwn.exist){
-        return createErrRes({error:'Experience data not found',res,status_code:404});
+        return createErrRes({error:'Project data not found',res,status_code:404});
     }
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const experience = await prisma.experience.update({
+    const project = await prisma.project.update({
         where:{
             id:user_input.id,
         },
         data:{
             ...user_input,
+            last_update:new Date().toISOString(),
         }
     })
-    return res.json({message:"Update success",experience})
+    return res.json({message:"Update success",project})
 })
 
 /**
- * Delete experience base on id 
+ * Delete project base on id 
  */
-experience_route.delete('/',verifyToken,async (req,res)=>{
+project_route.delete('/',verifyToken,async (req,res)=>{
     const user = req.body.user as UserType;
     const {parsed_data,err_message} = checkValidInput([delete_schema],[req.body]);
     if(err_message.error){
@@ -76,32 +78,36 @@ experience_route.delete('/',verifyToken,async (req,res)=>{
     }
     const user_input = parsed_data[0];
     // check owner
-    const resultCheckOwn = await checkOwner(DataType.EXPERICENCE,user_input.id,user.id);
+    const resultCheckOwn = await checkOwner(DataType.PROJECT,user_input.id,user.id);
     if(!resultCheckOwn.exist){
-        return createErrRes({error:'experience data not found',res,status_code:404});
+        return createErrRes({error:'Project data not found',res,status_code:404});
     }
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const experience = await prisma.experience.delete({
+    const project = await prisma.project.delete({
         where:{
             id:user_input.id,
         },
     })
-    return res.json({message:"Delete success",experience})
+    return res.json({message:"Delete success",project})
 })
 
 /**
- * Get achievement base on user_id or user_name 
+ * Get project base on user_id or user_name 
  */
-experience_route.get('/',async (req,res)=>{
+project_route.get('/',async (req,res)=>{
     const {user_name,user_id,website_id} = req.query;
     let cur_user_id = user_id;
+    const errors = []
     if(!user_name&&!user_id){
-        return createErrRes({error:'Require user_name or user_id in query',res});
+        errors.push('Require user_name or user_id in query');
     }
     if(!website_id){
-        return createErrRes({error:'Require website_id in query',res});
+        errors.push('Require website_id in query');
+    }
+    if(errors.length!==0){
+        return createErrRes({error:errors[0],errors,res});
     }
     if(!user_id){
         const user = await prisma.user.findFirst({where:{
@@ -115,7 +121,7 @@ experience_route.get('/',async (req,res)=>{
         }
         cur_user_id = user.id;
     }
-    const achievements = await prisma.experience.findMany({
+    const projects = await prisma.project.findMany({
         where:{
             portfolioData:{
                 user_id:cur_user_id as string,
@@ -123,6 +129,6 @@ experience_route.get('/',async (req,res)=>{
             }
         },
     })
-    return res.json({achievements});
+    return res.json({projects});
 })
-export default experience_route;
+export default project_route;

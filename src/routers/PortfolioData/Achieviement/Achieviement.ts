@@ -63,6 +63,7 @@ achievement_route.patch('/',verifyToken,async (req,res)=>{
         },
         data:{
             ...user_input,
+            last_update:new Date().toISOString(),
         }
     })
     return res.json({message:"Update success",achievement})
@@ -100,11 +101,15 @@ achievement_route.delete('/',verifyToken,async (req,res)=>{
 achievement_route.get('/',async (req,res)=>{
     const {user_name,user_id,website_id} = req.query;
     let cur_user_id = user_id;
+    const errors = []
     if(!user_name&&!user_id){
-        return createErrRes({error:'Require user_name or user_id in query',res});
+        errors.push('Require user_name or user_id in query');
     }
     if(!website_id){
-        return createErrRes({error:'Require website_id in query',res});
+        errors.push('Require website_id in query');
+    }
+    if(errors.length!==0){
+        return createErrRes({error:errors[0],errors,res});
     }
     if(!user_id){
         const user = await prisma.user.findFirst({where:{

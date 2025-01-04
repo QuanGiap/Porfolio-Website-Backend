@@ -118,6 +118,8 @@ auth_route.post("/sign_up", async (req, res) => {
       user_name,
       email,
       password: hashPass,
+      //will set to false latter after get email service
+      email_verified:true,
     },
     select: { id: true },
   });
