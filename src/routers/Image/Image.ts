@@ -39,8 +39,8 @@ image_route.post(
   async (req, res) => {
     //files exist since checked
     const files = req.files as fileUpload.FileArray;
-    //req.body.user from verifyToken
-    const user = req.body.user as UserType;
+    //req.user from verifyToken
+    const user = req.user as UserType;
     //check user input
     const { parsed_data, err_message } = checkValidInput(
       [post_img_schema],
@@ -117,13 +117,16 @@ image_route.post(
   }
 );
 
+/**
+ * Upload image to cloud and insert id to user data base.
+ */
 image_route.post(
   "/user",
   verifyToken,
   (...params) => checkValidImgMiddleware(...params, true, false),
   async (req, res) => {
-    //req.body.user from verify token
-    const user = req.body.user as UserType;
+    //req.user from verify token
+    const user = req.user as UserType;
     //only 1 image is accepted, it checked
     const img_file = (req.files as fileUpload.FileArray)
       .images as fileUpload.UploadedFile;
@@ -164,6 +167,10 @@ image_route.post(
   }
 );
 
+
+/**
+ * Upload image to cloud and insert id to content data base.
+ */
 image_route.post(
   "/content-image",
   verifyToken,
@@ -171,8 +178,8 @@ image_route.post(
   (...params) => checkValidImgMiddleware(...params, true, false),
   checkValidJsonMiddleware,
   async (req, res) => {
-    //guarantee req.body.user exist from (verifyToken)
-    const user = req.body.user as UserType;
+    //guarantee req.user exist from (verifyToken)
+    const user = req.user as UserType;
     const file = (req.files as fileUpload.FileArray)
       .images as fileUpload.UploadedFile;
     const { err_message, parsed_data } = checkValidInput(
@@ -215,6 +222,9 @@ image_route.post(
   }
 );
 
+/**
+ * Upload image to cloud, remove old image and update id to content data base.
+ */
 image_route.patch(
   "/content-image",
   verifyToken,
@@ -222,8 +232,8 @@ image_route.patch(
   (...params) => checkValidImgMiddleware(...params, true, false),
   checkValidJsonMiddleware,
   async (req, res) => {
-    //guarantee req.body.user exist from (verifyToken)
-    const user = req.body.user as UserType;
+    //guarantee req.user exist from (verifyToken)
+    const user = req.user as UserType;
     const file = (req.files as fileUpload.FileArray)
       .images as fileUpload.UploadedFile;
     const { err_message, parsed_data } = checkValidInput(

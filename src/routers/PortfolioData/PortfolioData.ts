@@ -27,8 +27,8 @@ portfolio_data_route.post('/',verifyToken,async (req,res)=>{
       return createErrRes({...err_message,res});
     }
     const user_input = parsed_data[0];
-    //req.body.user exist becuase of verifyToken
-    const user = req.body.user as UserType
+    //req.user exist becuase of verifyToken
+    const user = req.user as UserType
     //check if user already create portData of based on website_id
     const portDataCount = await prisma.portfolioData.count({
       where:{
@@ -51,8 +51,8 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   if(err_message.error){
     return createErrRes({...err_message,res});
   }
-  //verify user (req.body.user exist from verifyToken)
-  const user = req.body.user as UserType;
+  //verify user (req.user exist from verifyToken)
+  const user = req.user as UserType;
   const user_input = parsed_data[0];
   //check if portfolioData exist base on id
   const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
@@ -94,8 +94,8 @@ portfolio_data_route.post(
       });
     }
     //verify user
-    //guarantee req.body.user exist from (verifyToken)
-    const user = req.body.user as UserType;
+    //guarantee req.user exist from (verifyToken)
+    const user = req.user as UserType;
     const file = req.files.images as UploadedFile;
     const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);
     if(err_message.error){

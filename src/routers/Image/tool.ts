@@ -31,17 +31,37 @@ const update_img_ids_handler: {
   USER: (id) => new Promise((resolve) => resolve([])),
 };
 
+/**
+ * Get ids of all image and owner id
+ * @param user_input (post_img_schema)
+ * @returns {img_ids: string[]; owner_id: string | undefined;}
+ */
 const getIdsImageAndCheckOwner = async (
   user_input: z.infer<typeof post_img_schema>
 ) => {
-  const img_ids = await get_img_ids_handler[user_input.type](user_input.id);
-  return img_ids;
+  const result = await get_img_ids_handler[user_input.type](user_input.id);
+  return result;
 };
 
+/**
+ * update img id to data base and return array of image id
+ * @param img_ids 
+ * @param id 
+ * @param type 
+ * @returns array of image id
+ */
 const updateImageIdsToDB = async(img_ids:string[],id:string,type:ImageType)=>{
     return await update_img_ids_handler[type](img_ids,id);
 }
 
+/**
+ * Check array of id from user input and array of id from data base
+ * Create error message if: detech new (or invalid) ID
+ *
+ * @param image_ids 
+ * @param user_input_image_ids 
+ * @returns Return the count of how many new image should insert, errors (if found) and array of image id should be remove
+ */
 const checkIdsImage = (image_ids: string[], user_input_image_ids: string[]) => {
   const errors = [];
   const id_set = new Set<string>();
@@ -65,14 +85,6 @@ const checkIdsImage = (image_ids: string[], user_input_image_ids: string[]) => {
     new_imgs_count,
     remove_image_ids: [...id_set.values()],
   };
-};
-
-const updateIdsArrDB = async (
-  type: ImageType,
-  img_ids: string[],
-  id: string
-) => {
-  return await update_img_ids_handler[type](img_ids, id);
 };
 
 /**
@@ -196,4 +208,4 @@ async function updateImgsFromExprience(id_images: string[], id: string) {
   return experience.img_ids;
 }
 
-export { getIdsImageAndCheckOwner, checkIdsImage, uploadAndRemoveImage, updateIdsArrDB,updateImageIdsToDB };
+export { getIdsImageAndCheckOwner, checkIdsImage, uploadAndRemoveImage, updateImageIdsToDB };

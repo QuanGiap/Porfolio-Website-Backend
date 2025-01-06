@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import cors from 'cors'
 import dotenv from 'dotenv';
 import user_route from "../src/routers/User/User";
-import test_route from "./routers/test/testRoute";
 import portfolio_data_route from "./routers/PortfolioData/PortfolioData";
 import auth_route from "./routers/Auth/Auth";
 import image_route from "./routers/Image/Image";
@@ -20,7 +19,6 @@ app.use(express.static('public'))
 app.use('/image_route',image_route);
 app.use('/user',user_route)
 app.use('/auth',auth_route)
-// app.use('/test',test_route);
 app.use('/portfolio_content',portfolio_data_route);
 app.get('/', function (req:Request, res:Response) {
   res.json({msg: 'This is CORS-enabled to every website!'})

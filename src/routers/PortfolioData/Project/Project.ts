@@ -7,14 +7,15 @@ import { UserType } from '../../../type/Type';
 import { delete_schema, patch_schema, post_schema } from './schema';
 import checkOwner from '../../../tools/IsOwner';
 import { DataType } from '../../../Enum/Enum';
+import UserInputFilter from '../../../tools/UserInputFilter';
 const project_route = express.Router();
 
 /**
  * Create new project 
  */
 project_route.post('/',verifyToken,async (req,res)=>{
-    //req.body.user from verifyToken
-    const user = req.body.user as UserType;
+    //req.user from verifyToken
+    const user = req.user as UserType;
     const {parsed_data,err_message} = checkValidInput([post_schema],[req.body]);
     if(err_message.error){
         return createErrRes({...err_message,res});
@@ -41,7 +42,7 @@ project_route.post('/',verifyToken,async (req,res)=>{
  * Update project base on id 
  */
 project_route.patch('/',verifyToken,async (req,res)=>{
-    const user = req.body.user as UserType;
+    const user = req.user as UserType;
     const {parsed_data,err_message} = checkValidInput([patch_schema],[req.body]);
     if(err_message.error){
         return createErrRes({...err_message,res});
@@ -55,12 +56,13 @@ project_route.patch('/',verifyToken,async (req,res)=>{
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
+    const dataUpdate = UserInputFilter(user_input);
     const project = await prisma.project.update({
         where:{
             id:user_input.id,
         },
         data:{
-            ...user_input,
+            ...dataUpdate,
             last_update:new Date().toISOString(),
         }
     })
@@ -71,7 +73,7 @@ project_route.patch('/',verifyToken,async (req,res)=>{
  * Delete project base on id 
  */
 project_route.delete('/',verifyToken,async (req,res)=>{
-    const user = req.body.user as UserType;
+    const user = req.user as UserType;
     const {parsed_data,err_message} = checkValidInput([delete_schema],[req.body]);
     if(err_message.error){
         return createErrRes({...err_message,res});
@@ -109,10 +111,11 @@ project_route.get('/',async (req,res)=>{
     if(errors.length!==0){
         return createErrRes({error:errors[0],errors,res});
     }
+    const user_name_parsed = (user_name as string).replace('+',' ');
     if(!user_id){
         const user = await prisma.user.findFirst({where:{
             //user_name exist if user_id not exist due to first condition
-            user_name:user_name as string,
+            user_name:user_name_parsed as string,
         },select:{
             id:true,
         }})

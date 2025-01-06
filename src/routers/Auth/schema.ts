@@ -5,19 +5,19 @@ export const post_sign_up_schema = zod.object({
       required_error: "first_name is missing in body",
       invalid_type_error: "first_name need to be a string",
     })
-    .min(1, `first_name can't be empty string`),
+    .min(1, `first_name can't be empty string`).regex(/^[\w\s-]+$/,'No special character allow in first_name'),
   last_name: zod
     .string({
       required_error: "last_name is missing in body",
       invalid_type_error: "last_name need to be a string",
     })
-    .min(1, `last_name can't be empty string`),
+    .min(1, `last_name can't be empty string`).regex(/^[\w\s-]+$/,'No special character allow in last_name'),
   user_name: zod
     .string({
       required_error: "user_name is missing in body",
       invalid_type_error: "user_name need to be a string",
     })
-    .min(1, `user_name can't be empty string`),
+    .min(1, `user_name can't be empty string`).regex(/^[\w\s-]+$/,'No special character allow in user_name'),
   email: zod
     .string({
       required_error: "email is missing in body",

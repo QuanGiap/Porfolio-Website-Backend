@@ -61,6 +61,7 @@ model PortfolioData {
   last_update       DateTime           @default(now())
 
   @@index([user_id, website_design_id])
+  @@index([website_design_id])
 }
 
 model WebsiteDesign {
