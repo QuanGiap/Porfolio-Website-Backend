@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "server manage customer package",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/app.ts",
@@ -34,6 +35,8 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.5.0",
+    "chai": "^5.1.2",
+    "chai-http": "^5.1.1",
     "mocha": "^11.0.1",
     "nodemon": "^3.1.4",
     "prisma": "^5.18.0",
