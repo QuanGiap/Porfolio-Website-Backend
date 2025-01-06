@@ -1,18 +1,55 @@
-import zod from 'zod';
-import { ExperienceType } from '@prisma/client';
-export const post_schema = zod.object({
-    portfolioData_id:zod.string().regex(/^[a-fA-F0-9]{24}$/,'website_design_id need to be valid ObjectID'),
-    title:zod.string({required_error:'title is required in body',invalid_type_error:'title need to be a string'}),
-    description:zod.string({required_error:'description is required in body',invalid_type_error:'description need to be a string'}),
-    start_date:zod.string({required_error:'start_date is required in body',invalid_type_error:'start_date need to be a string'}).datetime({offset:true,message:'start date should be ISO type'}),
-    end_date:zod.string({required_error:'end_date is required in body',invalid_type_error:'end_date need to be a string'}).datetime({offset:true,message:'start date should be ISO type'}),
-    company_url:zod.string({invalid_type_error:'company_url need to be a string'}).optional(),
-    skills:zod.array(zod.string({invalid_type_error:'item in skill need to be a string'})).optional(),
-    role:zod.string({required_error:'role is required in body',invalid_type_error:'role need to be a string'}),
-    type:zod.nativeEnum(ExperienceType,{required_error:'type is required in body',invalid_type_error:'type should be one of these: '+Object.values(ExperienceType).join(', ')})
-})
-export const get_schema = zod.object({
-    portfolioData_id:zod.string().regex(/^[a-fA-F0-9]{24}$/,'website_design_id need to be valid ObjectID'),
-    company_url:zod.string(),
-
-})
+import zod from "zod";
+import { ImageType } from "../../Enum/Enum";
+import { isValidId } from "../../tools/IdGenerator";
+export const post_img_schema = zod.object({
+  id:zod
+      .string({
+        required_error: "type id is required in json",
+        invalid_type_error: "id need to be a valid ObjectID",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "id need to be valid ObjectID"),
+    type: zod.nativeEnum(ImageType, {
+      required_error:"type is required in json. Only accept enum: " +
+        Object.values(ImageType).join(", "),
+      invalid_type_error:
+        "type need to be an valid enum. Only accept: " +
+        Object.values(ImageType).join(", "),
+    }),
+    image_ids:zod.array(zod.string({
+      required_error: "ids not found in json",
+      invalid_type_error: "ids need to be an ObjectID",
+    }),{invalid_type_error:'ids should be a string array',required_error:'ids is required in json file'}).refine((arr)=>{
+      for(let i=0;i<arr.length;i++){
+        if(!isValidId(arr[i])&&arr[i]!=='NI') return false;
+      }
+      return true;
+    },'Element in image_ids only accept valid ID from server provided or "NI" which stand for new image')
+  },
+  { required_error: "Json file not found" }
+);
+export const post_img_content_schema = zod.object(
+  {
+    portfolio_data_id: zod
+      .string({
+        required_error: "portfolio_data_id is missing in json",
+        invalid_type_error: "portfolio_data_id need to be a string",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "portfolio_data_id need to be valid ObjectID"),
+    place_id: zod.string({
+      required_error: "place_id is missing in json",
+      invalid_type_error: "place_id need to be a string",
+    }),
+  },
+  { required_error: "Body data not found" }
+);
+export const patch_img_content_schema = zod.object(
+  {
+    id: zod
+      .string({
+        required_error: "id is missing in json",
+        invalid_type_error: "id need to be a string",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "id need to be valid ObjectID"),
+  },
+  { required_error: "Body data not found" }
+);

@@ -18,12 +18,10 @@ enum ExperienceType {
   JOB
 }
 
-enum Type {
-  PORTFOLIO
-  EXPERICENCE
-  PROJECT
-  USER
-  ACHIEVEMENT
+enum VerifyType {
+  EMAIL
+  AUTHENTICATION
+  RESET_PASS
 }
 
 model User {
@@ -32,11 +30,9 @@ model User {
   user_name      String
   last_name      String
   email          String
-  phone_number   String
   img_id         String?
   password       String
   email_verified Boolean         @default(false)
-  phone_verified Boolean         @default(false)
   create_at      DateTime        @default(now())
   last_update    DateTime        @default(now())
   code_verify    CodeVerify[]
@@ -46,7 +42,6 @@ model User {
   @@unique([user_name])
   @@index([first_name, last_name])
   @@index([email])
-  @@index([phone_number])
 }
 
 model PortfolioData {
@@ -59,12 +54,14 @@ model PortfolioData {
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
   experience        Experience[]
-  portfolioImage    PortfolioImage[]
+  portfolio_image   PortfolioImage[]
   title             String
   desciption        String
-  create_at     DateTime        @default(now())
-  last_update   DateTime        @default(now())
+  create_at         DateTime           @default(now())
+  last_update       DateTime           @default(now())
+
   @@index([user_id, website_design_id])
+  @@index([website_design_id])
 }
 
 model WebsiteDesign {
@@ -82,6 +79,7 @@ model Experience {
   portfolioData_id String         @db.ObjectId
   portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
   title            String
+  experience_type  String         @default("")
   description      String
   img_ids          String[]
   start_date       DateTime
@@ -101,7 +99,7 @@ model Project {
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
   tools            String[]
-  project_type     String
+  project_type     String        @default("")
   title            String
   description      String
   skills           String[]
@@ -119,6 +117,7 @@ model Achievement {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
   portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  achievement_type String        @default("")
   title            String
   description      String
   img_ids          String[]
@@ -132,12 +131,13 @@ model Achievement {
 }
 
 model CodeVerify {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user_id   String   @db.ObjectId
-  user      User     @relation(fields: [user_id], references: [id])
-  create_at DateTime @default(now())
-  used      Boolean  @default(false)
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  user_id   String     @db.ObjectId
+  user      User       @relation(fields: [user_id], references: [id])
+  create_at DateTime   @default(now())
+  used      Boolean    @default(false)
   code      String
+  codeType  VerifyType
 
   @@index([create_at, user_id])
 }
@@ -165,5 +165,5 @@ model PortfolioImage {
   create_at        DateTime      @default(now())
   last_update      DateTime      @default(now())
 
-  @@index([portfolioData_id])
+  @@index([portfolioData_id, place_id])
 }
