@@ -18,6 +18,25 @@ export const post_content_schema = zod.object(
   },
   { required_error: "Body data not found" }
 );
+export const patch_content_schema = zod.object(
+  {
+    id: zod
+      .string({
+        required_error: "id is missing in body",
+        invalid_type_error: "id need to be a string",
+      })
+      .regex(/^[a-fA-F0-9]{24}$/, "id need to be valid ObjectID"),
+    content: zod.string({
+      required_error: "content is missing in body",
+      invalid_type_error: "content need to be a string",
+    }).optional(),
+    place_id: zod.string({
+      required_error: "place_id is missing in body",
+      invalid_type_error: "place_id need to be a string",
+    }).optional(),
+  },
+  { required_error: "Body data not found" }
+);
 export const post_img_schema = zod.object(
   {
     portfolio_data_id: zod

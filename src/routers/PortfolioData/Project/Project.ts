@@ -56,7 +56,7 @@ project_route.patch('/',verifyToken,async (req,res)=>{
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const dataUpdate = UserInputFilter(user_input);
+    const dataUpdate = UserInputFilter(user_input,['id']);
     const project = await prisma.project.update({
         where:{
             id:user_input.id,

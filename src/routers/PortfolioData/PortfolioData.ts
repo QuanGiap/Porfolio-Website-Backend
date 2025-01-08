@@ -2,7 +2,15 @@ import express from "express";
 import verifyToken from "../../handler/VerifyToken";
 import prisma from "../../tools/PrismaSingleton";
 import { checkValidInput } from "../../tools/SchemaTool";
-import { post_content_schema, post_img_schema, post_portData_schema, user_id_schema, user_name_schema, website_id_schema } from "./schema";
+import {
+  patch_content_schema,
+  post_content_schema,
+  post_img_schema,
+  post_portData_schema,
+  user_id_schema,
+  user_name_schema,
+  website_id_schema,
+} from "./schema";
 import { createErrRes } from "../../tools/ResTool";
 import {
   uploadManager,
@@ -15,119 +23,117 @@ import { UserType } from "../../type/Type";
 import achievement_route from "./Achieviement/Achieviement";
 import experience_route from "./Experience/Experience";
 import project_route from "./Project/Project";
+import checkOwner from "../../tools/IsOwner";
+import { DataType } from "../../Enum/Enum";
+import UserInputFilter from "../../tools/UserInputFilter";
 const portfolio_data_route = express.Router();
-
 
 /**
  * Create new portoflioData
  */
-portfolio_data_route.post('/',verifyToken,async (req,res)=>{
-    const {parsed_data,err_message} = checkValidInput([post_portData_schema],[req.body]);
-    if(err_message.error){
-      return createErrRes({...err_message,res});
-    }
-    const user_input = parsed_data[0];
-    //req.user exist becuase of verifyToken
-    const user = req.user as UserType
-    //check if user already create portData of based on website_id
-    const portDataCount = await prisma.portfolioData.count({
-      where:{
-        user_id:user.id,
-        website_design_id:user_input.website_id,
-      }
-    })
-    if(portDataCount!=0){
-      return createErrRes({error:'User already have this type of porfolio website',res});
-    }
-    
-  })
+portfolio_data_route.post("/", verifyToken, async (req, res) => {
+  const { parsed_data, err_message } = checkValidInput(
+    [post_portData_schema],
+    [req.body]
+  );
+  if (err_message.error) {
+    return createErrRes({ ...err_message, res });
+  }
+  const user_input = parsed_data[0];
+  //req.user exist becuase of verifyToken
+  const user = req.user as UserType;
+  //check if user already create portData of based on website_id
+  const portDataCount = await prisma.portfolioData.count({
+    where: {
+      user_id: user.id,
+      website_design_id: user_input.website_id,
+    },
+  });
+  if (portDataCount != 0) {
+    return createErrRes({
+      error: "User already have this type of porfolio website",
+      res,
+    });
+  }
+});
 
 /**
  * Create new portfolio content base on content and portfolio_data_id
  */
 portfolio_data_route.post("/content", verifyToken, async (req, res) => {
   //check valid input
-  const {err_message,parsed_data} = checkValidInput([post_content_schema],[req.body||{}]);
-  if(err_message.error){
-    return createErrRes({...err_message,res});
+  const { err_message, parsed_data } = checkValidInput(
+    [post_content_schema],
+    [req.body || {}]
+  );
+  if (err_message.error) {
+    return createErrRes({ ...err_message, res });
   }
   //verify user (req.user exist from verifyToken)
   const user = req.user as UserType;
   const user_input = parsed_data[0];
   //check if portfolioData exist base on id
-  const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
-  if(!portData){
-    return createErrRes({error:'portfolioData not found',res});
+  const portData = await prisma.portfolioData.findFirst({
+    where: { id: user_input.portfolio_data_id },
+    select: { user_id: true },
+  });
+  if (!portData) {
+    return createErrRes({ error: "portfolioData not found", res });
   }
-  if(portData.user_id !== user.id){
-    return createErrRes({error:'Forbidden',res,status_code:403});
+  if (portData.user_id !== user.id) {
+    return createErrRes({ error: "Forbidden", res, status_code: 403 });
   }
   const result = await prisma.portfolioContent.create({
-    data:{
-      portfolioData_id:user_input.portfolio_data_id,
-      content:user_input.content,
-      place_id:user_input.place_id
-    }
-  })
+    data: {
+      portfolioData_id: user_input.portfolio_data_id,
+      content: user_input.content,
+      place_id: user_input.place_id,
+    },
+  });
   //create new content
   res.send(result).status(201);
 });
 
 /**
- * Create new portfolio content base on content and portfolio_data_id
- * only accept multipart/form-data content-type
+ * Update new portfolio content base on content_id
  */
-portfolio_data_route.post(
-  "/image",
-  verifyToken,
-  uploadManager,
-  checkValidImgMiddleware,
-  checkValidJsonMiddleware,
-  async (req, res) => {
-    //guarantee files not empty since checked
-    req.files = req.files as FileArray;
-    if (Array.isArray(req.files.images)) {
-      return createErrRes({
-        res,
-        error: "Only accept 1 image",
-        status_code: 413,
-      });
-    }
-    //verify user
-    //guarantee req.user exist from (verifyToken)
-    const user = req.user as UserType;
-    const file = req.files.images as UploadedFile;
-    const {err_message,parsed_data} = checkValidInput([post_img_schema],[req.body]);
-    if(err_message.error){
-      return createErrRes({...err_message,res});
-    }
-    const user_input = parsed_data[0];
-    //check if portfolioData exist base on id
-    const portData = await prisma.portfolioData.findFirst({where:{id:user_input.portfolio_data_id},select:{user_id:true}});
-    if(!portData){
-      return createErrRes({error:'portfolioData not found',res});
-    }
-    if(portData.user_id !== user.id){
-      return createErrRes({error:'Forbidden',res,status_code:403});
-    }
-    //upload image and create save img id
-    const id = await uploadImgToStorage(file);
-    const imgSave = await prisma.portfolioImage.create({
-      data:{
-        image_id:id,
-        image_name:file.name,
-        image_size:file.size,
-        portfolioData_id:user_input.portfolio_data_id,
-        place_id:user_input.place_id,
-      }
-    })
-    //create new content
-    res.json(imgSave).status(201);
+portfolio_data_route.patch("/content", verifyToken, async (req, res) => {
+  //check valid input
+  const { err_message, parsed_data } = checkValidInput(
+    [patch_content_schema],
+    [req.body || {}]
+  );
+  if (err_message.error) {
+    return createErrRes({ ...err_message, res });
   }
-);
+  //verify user (req.user exist from verifyToken)
+  const user = req.user as UserType;
+  const user_input = parsed_data[0];
+  //check if portfolioData exist base on id
+  const port_content_check_result = await checkOwner(
+    DataType.PORTFOLIO_CONTENT,
+    user_input.id,
+    user.id
+  );
+  if (!port_content_check_result.exist) {
+    return createErrRes({ error: "Portfolio content not found", res });
+  }
+  if (!port_content_check_result.owned) {
+    return createErrRes({ error: "Forbidden", res, status_code: 403 });
+  }
+  const update_data = UserInputFilter(user_input,['id']);
+  //update new content
+  const result = await prisma.portfolioContent.update({
+    where:{
+      id:user_input.id,
+    },
+    data: update_data,
+  });
+  res.json(result).status(201);
+});
 
 /**
- * Get user portfoliodata content including project, achievement, exprience, project
+ * Get user portfoliodata content including project, achievement, exprience
  */
 portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
   const { user_name, user_id } = req.query;
@@ -136,7 +142,7 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
     const err_msg = "Need user_name or user_id in query url";
     return createErrRes({ error: err_msg, res });
   }
-  const user_name_parsed = (user_name as string).replace('+',' ');
+  const user_name_parsed = (user_name as string).replace("+", " ");
   //user can get info by user name or user id
   let user_schema_check = user_id ? user_id_schema : user_name_schema;
   let input_check = user_id || user_name_parsed;
@@ -199,8 +205,8 @@ portfolio_data_route.get("/website_id/:website_id", async (req, res) => {
   });
 });
 
-portfolio_data_route.use('/achievement',achievement_route);
-portfolio_data_route.use('/experience',experience_route);
-portfolio_data_route.use('/project',project_route);
+portfolio_data_route.use("/achievement", achievement_route);
+portfolio_data_route.use("/experience", experience_route);
+portfolio_data_route.use("/project", project_route);
 
 export default portfolio_data_route;
