@@ -17,7 +17,7 @@ export const post_sign_up_schema = zod.object({
       required_error: "user_name is missing in body",
       invalid_type_error: "user_name need to be a string",
     })
-    .min(1, `user_name can't be empty string`).regex(/^[\w\s-]+$/,'No special character allow in user_name'),
+    .min(1, `user_name can't be empty string`).regex(/^[a-zA-Z0-9_]+$/,'No special character allow in user_name'),
   email: zod
     .string({
       required_error: "email is missing in body",

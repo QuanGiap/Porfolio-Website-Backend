@@ -1,9 +1,6 @@
 import express from 'express';
 import verifyToken from '../../../handler/VerifyToken';
-import uploadManager, { checkValidImgMiddleware, checkValidJsonMiddleware } from '../../../handler/UploadManager';
-import { uploadImgToStorage } from '../../../tools/GoogleStorage';
 import { checkValidInput } from '../../../tools/SchemaTool';
-import fileUpload from 'express-fileupload';
 import prisma from '../../../tools/PrismaSingleton';
 import { createErrRes } from '../../../tools/ResTool';
 import { UserType } from '../../../type/Type';

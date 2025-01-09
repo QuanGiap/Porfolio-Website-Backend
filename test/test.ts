@@ -1,23 +1,34 @@
 import assert from 'assert';
 import chaiHttp from 'chai-http';
 import chai from 'chai';
-import server from '../src/app'
+import server from '../src/app';
 chai.use(chaiHttp)
 describe('Test all route API', function () {
   //create a server
-  const request = chai.request.Request(app).keepOpen();
+  const request = chai.request.Request(server).keepOpen();
   let token = '';
   let userTestData = [];
   describe('Auth route', function () {
-    //add new user but missing info
+    const userTestData ={
+      first_name:"User",
+      last_name:"Test",
+      user_name:"user_test",
+      email:"email@gmail.com",
+      password:"This is a password"
+    } 
     //add new user
     //add new user with existed email or user_name
     //sign in but incorrect email
     //sign in but incorrect pass
     //sign in user success
-    it('should return -1 when the value is not present', function (done) {
-      // assert.equal([1, 2, 3].indexOf(4), -1);
-      done();
+    it('add new user but missing info', async function (done) {
+      request.post('/sign_up').send({
+                invalid_value:"invalid_value"
+      }).end((err,res)=>{
+        data = res.body;
+        console.log(data)
+        done();
+      })
     });
   });
 
