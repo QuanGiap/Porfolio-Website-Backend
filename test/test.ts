@@ -1,13 +1,11 @@
 import assert from 'assert';
-import chaiHttp from 'chai-http';
-import chai from 'chai';
 import server from '../src/app';
-chai.use(chaiHttp)
+import request from 'supertest';
 describe('Test all route API', function () {
   //create a server
-  const request = chai.request.Request(server).keepOpen();
+  const request_server = request(server);
   let token = '';
-  let userTestData = [];
+  let user_test_data = [];
   describe('Auth route', function () {
     const userTestData ={
       first_name:"User",
@@ -21,14 +19,12 @@ describe('Test all route API', function () {
     //sign in but incorrect email
     //sign in but incorrect pass
     //sign in user success
-    it('add new user but missing info', async function (done) {
-      request.post('/sign_up').send({
-                invalid_value:"invalid_value"
-      }).end((err,res)=>{
-        data = res.body;
-        console.log(data)
+    it('add new user but missing info', function (done) {
+      request_server.get('/test').end((err,response)=>{
+        console.log(response);
+        assert.deepEqual(response.body,{message:'Test case created'})
         done();
-      })
+      });
     });
   });
 
@@ -130,8 +126,8 @@ describe('Test all route API', function () {
   });
   //close server
   //delete all test data
-  this.afterAll(()=>{
-    request.close();
-  })
+  // this.afterAll(()=>{
+  //   request.close();
+  // })
 });
 

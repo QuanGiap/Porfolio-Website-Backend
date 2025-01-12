@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "description": "server manage customer package",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/app.ts",
     "dev": "nodemon src/app.ts",
-    "test": "mocha test/**/*.js --timeout 60000",
+    "test": "mocha test/**/*.ts --timeout 60000",
     "vercel-build": "echo hello"
   },
   "author": "Quan",
@@ -35,12 +34,10 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.5.0",
-    "@types/supertest": "^6.0.2",
     "cross-env": "^7.0.3",
     "mocha": "^11.0.1",
     "nodemon": "^3.1.4",
     "prisma": "^5.18.0",
-    "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
