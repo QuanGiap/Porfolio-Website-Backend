@@ -13,7 +13,7 @@ describe('Test all route API', function () {
       last_name:"Test",
       user_name:"user_test",
       email:"email@gmail.com",
-      password:"This is a password"
+      password:"Thisisapassword1!"
     } 
     it('add new user but missing info', function (done) {
       const user_missing_info={
@@ -39,8 +39,8 @@ describe('Test all route API', function () {
     it('add new user with existed email or user_name', function (done) {
       request_server.post('/auth/sign_up').send(userTestData).end((err,response)=>{
         assert.equal(response.statusCode,409,'Status code should be 409');
-        assert.ok(response.body.errors?.inludes('User name used'),'errors should contains "User name used"');
-        assert.ok(response.body.errors?.inludes('Email used'),'errors should contains "Email used"');
+        assert.ok(response.body.errors?.includes('User name used'),'errors should contains "User name used"');
+        assert.ok(response.body.errors?.includes('Email used'),'errors should contains "Email used"');
         done();
       });
     });
@@ -51,7 +51,7 @@ describe('Test all route API', function () {
         done();
       });
     });
-    it('sign in but incorrect email', function (done) {
+    it('sign in but incorrect password', function (done) {
       request_server.post('/auth/sign_in').send({email:userTestData.email,password:"Incorrect password"}).end((err,response)=>{
         assert.equal(response.statusCode,401,'Status code should be 401');
         assert.equal(response.body.error, 'Password not correct','error should contains "Password not correct"');
