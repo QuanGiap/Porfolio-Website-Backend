@@ -1,11 +1,12 @@
 import assert from 'assert';
 import server from '../src/app';
 import request from 'supertest';
+import prisma from '../src/tools/PrismaSingleton';
 describe('Test all route API', function () {
   //create a server
   const request_server = request(server);
   let token = '';
-  let user_test_data = [];
+  let user_test_data:string[] = [];
   describe('Auth route', function () {
     const userTestData ={
       first_name:"User",
@@ -14,15 +15,56 @@ describe('Test all route API', function () {
       email:"email@gmail.com",
       password:"This is a password"
     } 
-    //add new user
-    //add new user with existed email or user_name
-    //sign in but incorrect email
-    //sign in but incorrect pass
-    //sign in user success
     it('add new user but missing info', function (done) {
-      request_server.get('/test').end((err,response)=>{
-        console.log(response);
-        assert.deepEqual(response.body,{message:'Test case created'})
+      const user_missing_info={
+        ...userTestData,
+        last_name:undefined,
+      }
+      request_server.post('/auth/sign_up').send(user_missing_info).end((err,response)=>{
+        assert.equal(response.statusCode,400,'Status code should be 400');
+        assert.equal(response.body.error,'last_name is missing in body','"error" message should be "last_name is missing in body"');
+        done();
+      });
+    });
+    it('add new user', function (done) {
+      request_server.post('/auth/sign_up').send(userTestData).end((err,response)=>{
+        console.log(response.body);
+        assert.equal(response.statusCode,201,'Status code should be 201');
+        assert.equal(response.body.message,'User created, please veriy email','"message" should be "User created, please veriy email"');
+        assert.ok(response.body.user_id,'user_id  not found in response');
+        user_test_data.push(response.body.user_id)
+        done();
+      });
+    });
+    it('add new user with existed email or user_name', function (done) {
+      request_server.post('/auth/sign_up').send(userTestData).end((err,response)=>{
+        assert.equal(response.statusCode,409,'Status code should be 409');
+        assert.ok(response.body.errors?.inludes('User name used'),'errors should contains "User name used"');
+        assert.ok(response.body.errors?.inludes('Email used'),'errors should contains "Email used"');
+        done();
+      });
+    });
+    it('sign in but incorrect email', function (done) {
+      request_server.post('/auth/sign_in').send({email:"not_found@test.com",password:"correct password"}).end((err,response)=>{
+        assert.equal(response.statusCode,404,'Status code should be 404');
+        assert.equal(response.body.error, 'User not found','error should contains "User not found"');
+        done();
+      });
+    });
+    it('sign in but incorrect email', function (done) {
+      request_server.post('/auth/sign_in').send({email:userTestData.email,password:"Incorrect password"}).end((err,response)=>{
+        assert.equal(response.statusCode,401,'Status code should be 401');
+        assert.equal(response.body.error, 'Password not correct','error should contains "Password not correct"');
+        done();
+      });
+    });
+    //sign in user success
+    it('sign in user success', function (done) {
+      request_server.post('/auth/sign_in').send({email:userTestData.email,password:userTestData.password}).end((err,response)=>{
+        assert.equal(response.statusCode,200,'Status code should be 200');
+        assert.equal(response.body.message, 'Sign in success','message should contains "Sign in success"');
+        assert.ok(response.body.authenticate_token, 'authenticate_token not found in response');
+        token = response.body.authenticate_token;
         done();
       });
     });
@@ -126,8 +168,14 @@ describe('Test all route API', function () {
   });
   //close server
   //delete all test data
-  // this.afterAll(()=>{
-  //   request.close();
-  // })
+  this.afterAll(async ()=>{
+    await prisma.user.deleteMany({
+      where:{
+        id:{
+          in:user_test_data,
+        }
+      }
+    })
+  })
 });
 
