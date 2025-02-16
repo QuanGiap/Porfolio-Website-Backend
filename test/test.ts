@@ -3,6 +3,7 @@ import server from '../src/app';
 import request from 'supertest';
 import prisma from '../src/tools/PrismaSingleton';
 describe('Test all route API', function () {
+  let website_id = '';
   //create a server
   const request_server = request(server);
   let token = '';
@@ -71,7 +72,6 @@ describe('Test all route API', function () {
   });
 
   
-  //create dummy user data before testing
   //get list of user based on invalid website_id
   //get list of user base on valid website_id
   //update user information with no token or invalid token
@@ -79,6 +79,44 @@ describe('Test all route API', function () {
   //update user information with invalid data
   //update user information with valid data
   describe('User route', function () {
+    //create website_id
+    // model WebsiteDesign {
+    //   id            String          @id @default(auto()) @map("_id") @db.ObjectId
+    //   url_website   String
+    //   PortfolioData PortfolioData[]
+    //   create_at     DateTime        @default(now())
+    //   last_update   DateTime        @default(now())
+    //   creator_id    String          @db.ObjectId
+    //   creator       User            @relation(fields: [creator_id], references: [id])
+    // }
+    it('creating dummy data', function (done) {
+      const createUserTestData=(i:number)=>{
+        return{
+        first_name:"User "+i,
+        last_name:"Test",
+        user_name:"user_test "+i,
+        email:`email${i}@gmail.com`,
+        password:"Thisisapassword1!"
+        }
+      } 
+      prisma.websiteDesign.create({
+        data:{
+          url_website:"https://test.com",
+          creator_id:user_test_data[0]
+        }
+      }).then((data)=>{
+        website_id = data.id;
+        //add users to website
+        prisma.user.createMany({
+          data:[0,1,2].map((i)=>createUserTestData(i));
+        })
+      }).catch((err)=>{
+        done(err);
+      }) 
+    });
+    //create dummy user data before testing
+    //get list of user based on invalid website_id
+    
     it('should return -1 when the value is not present', function () {
       assert.equal([1, 2, 3].indexOf(4), -1);
     });
