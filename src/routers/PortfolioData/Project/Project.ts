@@ -1,5 +1,5 @@
 import express from 'express';
-import verifyToken from '../../../handler/VerifyToken';
+import verifyToken from '../../../handler/verifyToken';
 import { checkValidInput } from '../../../tools/SchemaTool';
 import prisma from '../../../tools/PrismaSingleton';
 import { createErrRes } from '../../../tools/ResTool';
@@ -56,7 +56,7 @@ project_route.patch('/',verifyToken,async (req,res)=>{
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const dataUpdate = UserInputFilter(user_input);
+    const dataUpdate = UserInputFilter(user_input,['id']);
     const project = await prisma.project.update({
         where:{
             id:user_input.id,

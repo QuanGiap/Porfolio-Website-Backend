@@ -1,9 +1,6 @@
 import express from 'express';
-import verifyToken from '../../../handler/VerifyToken';
-import uploadManager, { checkValidImgMiddleware, checkValidJsonMiddleware } from '../../../handler/UploadManager';
-import { uploadImgToStorage } from '../../../tools/GoogleStorage';
+import verifyToken from '../../../handler/verifyToken';
 import { checkValidInput } from '../../../tools/SchemaTool';
-import fileUpload from 'express-fileupload';
 import prisma from '../../../tools/PrismaSingleton';
 import { createErrRes } from '../../../tools/ResTool';
 import { UserType } from '../../../type/Type';
@@ -58,7 +55,7 @@ achievement_route.patch('/',verifyToken,async (req,res)=>{
     if(!resultCheckOwn.owned){
         return createErrRes({error:'Forbidden',res,status_code:401});
     }
-    const dataUpdate = UserInputFilter(user_input);
+    const dataUpdate = UserInputFilter(user_input,['id']);
     const achievement = await prisma.achievement.update({
         where:{
             id:user_input.id,
