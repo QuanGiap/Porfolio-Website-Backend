@@ -3,7 +3,7 @@ import { checkValidInput } from "../../tools/SchemaTool";
 import { patch_schema, website_id_schema } from "./schema";
 import { createErrRes } from "../../tools/ResTool";
 import prisma from "../../tools/PrismaSingleton";
-import verifyToken from "../../handler/VerifyToken";
+import verifyToken from "../../handler/verifyToken";
 import { UserType } from "../../type/Type";
 import UserInputFilter from "../../tools/UserInputFilter";
 const user_route = express.Router();

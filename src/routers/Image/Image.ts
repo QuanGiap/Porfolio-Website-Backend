@@ -1,5 +1,5 @@
 import express from "express";
-import verifyToken from "../../handler/VerifyToken";
+import verifyToken from "../../handler/verifyToken";
 import uploadManager, {
   checkValidImgMiddleware,
   checkValidJsonMiddleware,

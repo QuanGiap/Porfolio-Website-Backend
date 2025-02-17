@@ -2,12 +2,14 @@ import assert from 'assert';
 import server from '../src/app';
 import request from 'supertest';
 import prisma from '../src/tools/PrismaSingleton';
+const ObjectID_dummy = '507f1f77bcf86cd799439011';
 describe('Test all route API', function () {
   let website_id = '';
   //create a server
   const request_server = request(server);
   let token = '';
   let user_test_data:string[] = [];
+  let portfoliodata_test_data:string[]=[];
   describe('Auth route', function () {
     const userTestData ={
       first_name:"User",
@@ -72,8 +74,6 @@ describe('Test all route API', function () {
   });
 
   
-  //get list of user based on invalid website_id
-  //get list of user base on valid website_id
   //update user information with no token or invalid token
   //update user information with exist user_name
   //update user information with invalid data
@@ -89,6 +89,7 @@ describe('Test all route API', function () {
     //   creator_id    String          @db.ObjectId
     //   creator       User            @relation(fields: [creator_id], references: [id])
     // }
+    //create dummy user data before testing
     it('creating dummy data', function (done) {
       const createUserTestData=(i:number)=>{
         return{
@@ -99,24 +100,61 @@ describe('Test all route API', function () {
         password:"Thisisapassword1!"
         }
       } 
+      //create website
       prisma.websiteDesign.create({
         data:{
           url_website:"https://test.com",
           creator_id:user_test_data[0]
         }
-      }).then((data)=>{
+      })
+      //create users
+      .then((data)=>{
         website_id = data.id;
         //add users to website
-        prisma.user.createMany({
-          data:[0,1,2].map((i)=>createUserTestData(i));
-        })
+        return Promise.all([1,2,3,4,5].map((i)=>{
+          return prisma.user.create({
+            data:{
+              ...createUserTestData(i),
+            }
+          })
+        }))
+      })
+      //create portfoliodata
+      .then(users=>{
+        user_test_data.push(...users.map((user)=>user.id));
+        return Promise.all(users.map((user)=>prisma.portfolioData.create({
+          data:{
+            user_id:user.id,
+            website_design_id:website_id,
+            title:"Portfolio Data "+user.id,
+            desciption:"This is a description",
+          }
+        })))
+      }).then(portData=>{
+        portfoliodata_test_data.push(...portData.map((portData)=>portData.id));
+        done();
       }).catch((err)=>{
         done(err);
       }) 
     });
-    //create dummy user data before testing
     //get list of user based on invalid website_id
-    
+    it("get list of user based on invalid website_id",function(done){
+      request_server.get(`/user/website_id/${ObjectID_dummy}/list`).end((err,response)=>{
+        assert.equal(response.statusCode,200,"Status code should be 200)");
+        assert.ok(Array.isArray(response.body.users),"User should be an array");
+        assert.equal(response.body.users.length,0,"User should be empty")
+        done();
+      })
+    })
+    //get list of user base on valid website_id
+    it("get list of user based on valid website_id",function(done){
+      request_server.get(`/user/website_id/${website_id}/list`).end((err,response)=>{
+        assert.equal(response.statusCode,200,"Status code should be 200)");
+        assert.ok(Array.isArray(response.body.users),"User should be an array");
+        assert.equal(response.body.users.length,5,"User should be 5")
+        done();
+      })
+    })
     it('should return -1 when the value is not present', function () {
       assert.equal([1, 2, 3].indexOf(4), -1);
     });
