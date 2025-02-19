@@ -7,6 +7,7 @@ describe('Test all route API', function () {
   let website_id = '';
   //create a server
   const request_server = request(server);
+  let token = '';
   let user_test_data:string[] = [];
   let portfoliodata_test_data:string[]=[];
   describe('Auth route', function () {
@@ -73,6 +74,15 @@ describe('Test all route API', function () {
 
   
   describe('User route', function () {
+    const createUserTestData=(i:number)=>{
+      return{
+      first_name:"User "+i,
+      last_name:"Test",
+      user_name:"user_test "+i,
+      email:`email${i}@gmail.com`,
+      password:"Thisisapassword1!"
+      }
+    } 
     //create website_id
     // model WebsiteDesign {
     //   id            String          @id @default(auto()) @map("_id") @db.ObjectId
@@ -85,15 +95,6 @@ describe('Test all route API', function () {
     // }
     //create dummy user data before testing
     it('creating dummy data', function (done) {
-      const createUserTestData=(i:number)=>{
-        return{
-        first_name:"User "+i,
-        last_name:"Test",
-        user_name:"user_test "+i,
-        email:`email${i}@gmail.com`,
-        password:"Thisisapassword1!"
-        }
-      } 
       //create website
       prisma.websiteDesign.create({
         data:{
@@ -149,9 +150,30 @@ describe('Test all route API', function () {
         done();
       })
     })
-    //update user information with exist user_name
-    it('should return -1 when the value is not present', function () {
-      assert.equal([1, 2, 3].indexOf(4), -1);
+    it('user login',function(done){
+      const user_data = createUserTestData(1)
+      request_server.post('/auth/sign_in').send({email:user_data.email,password:user_data.password}).end((err,response)=>{
+        assert.equal(response.statusCode,200,'Status code should be 200');
+        assert.equal(response.body.message, 'Sign in success','message should contains "Sign in success"');
+        assert.ok(response.body.authenticate_token, 'authenticate_token not found in response');
+        token = response.body.authenticate_token;
+        done();
+      });
+    })
+    //update user information
+    it('update user information', function () {
+      const user_update_data = {
+        first_name:"User updated",
+        last_name:"Test updated",
+      }
+      request_server.patch('/user').set('Authorization',
+        'Bearer '+token
+      ).send(user_update_data).end((err,response)=>{
+        assert.equal(response.statusCode,200,'Status code should be 200');
+        assert.equal(response.body.message,'Updated success','message should be "Updated success"');
+        assert.equal(response.body.user.first_name,user_update_data.first_name,"first_name should be updated");
+        assert.equal(response.body.user.last_name,user_update_data.last_name,"last_name should be updated");
+      })
     });
   });
 
@@ -241,22 +263,25 @@ describe('Test all route API', function () {
   //close server
   //delete all test data
   this.afterAll(async ()=>{
-    const user_delete_promise = prisma.user.deleteMany({
-      where:{
-        id:{
-          in:user_test_data,
-        }
-      }
-    })
-    const portfoliodata_delete_promise = prisma.portfolioData.deleteMany({
+    const portfoliodata_delete_promise = await prisma.portfolioData.deleteMany({
       where:{
         id:{
           in:portfoliodata_test_data,
         }
       }
     })
-    await Promise.all([user_delete_promise,portfoliodata_delete_promise]);
-
+    const website_delete_promise = await prisma.websiteDesign.delete({
+      where:{
+        id:website_id,
+      }
+    })
+    const user_delete_promise = await prisma.user.deleteMany({
+      where:{
+        id:{
+          in:user_test_data,
+        }
+      }
+    })
   })
 });
 
