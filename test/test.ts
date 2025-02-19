@@ -7,7 +7,6 @@ describe('Test all route API', function () {
   let website_id = '';
   //create a server
   const request_server = request(server);
-  let token = '';
   let user_test_data:string[] = [];
   let portfoliodata_test_data:string[]=[];
   describe('Auth route', function () {
@@ -67,17 +66,12 @@ describe('Test all route API', function () {
         assert.equal(response.statusCode,200,'Status code should be 200');
         assert.equal(response.body.message, 'Sign in success','message should contains "Sign in success"');
         assert.ok(response.body.authenticate_token, 'authenticate_token not found in response');
-        token = response.body.authenticate_token;
         done();
       });
     });
   });
 
   
-  //update user information with no token or invalid token
-  //update user information with exist user_name
-  //update user information with invalid data
-  //update user information with valid data
   describe('User route', function () {
     //create website_id
     // model WebsiteDesign {
@@ -155,6 +149,7 @@ describe('Test all route API', function () {
         done();
       })
     })
+    //update user information with exist user_name
     it('should return -1 when the value is not present', function () {
       assert.equal([1, 2, 3].indexOf(4), -1);
     });
@@ -246,13 +241,22 @@ describe('Test all route API', function () {
   //close server
   //delete all test data
   this.afterAll(async ()=>{
-    await prisma.user.deleteMany({
+    const user_delete_promise = prisma.user.deleteMany({
       where:{
         id:{
           in:user_test_data,
         }
       }
     })
+    const portfoliodata_delete_promise = prisma.portfolioData.deleteMany({
+      where:{
+        id:{
+          in:portfoliodata_test_data,
+        }
+      }
+    })
+    await Promise.all([user_delete_promise,portfoliodata_delete_promise]);
+
   })
 });
 

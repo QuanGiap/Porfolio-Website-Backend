@@ -16,13 +16,6 @@ export const patch_schema = zod.object(
       })
       .min(1, `last_name can't be empty string`)
       .regex(/^[\w\s-]+$/, "No special character allow in last_name").optional(),
-    user_name: zod
-      .string({
-        required_error: "user_name is missing in body",
-        invalid_type_error: "user_name need to be a string",
-      })
-      .min(1, `user_name can't be empty string`)
-      .regex(/^[\w\s-]+$/, "No special character allow in user_name").optional(),
   },
   { required_error: "Body not found" }
 );

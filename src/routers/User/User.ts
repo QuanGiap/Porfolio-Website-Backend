@@ -55,18 +55,18 @@ user_route.patch('/',verifyToken,async (req,res)=>{
     const user_input = parsed_data[0];
     const dataUpdate = UserInputFilter(user_input,['id']);
     //update user
-    if(user_input.user_name){
-        //check if user_name unique
-        const user_name_count = await prisma.user.count({
-            where:{
-                user_name:user_input.user_name,
-            }
-        })
-        if(user_name_count!==0){
-            return createErrRes({res,error:'User_name exist',status_code:409});
-        }
-    }
-    await prisma.user.update({
+    // if(user_input.user_name){
+    //     //check if user_name unique
+    //     const user_name_count = await prisma.user.count({
+    //         where:{
+    //             user_name:user_input.user_name,
+    //         }
+    //     })
+    //     if(user_name_count!==0){
+    //         return createErrRes({res,error:'User_name exist',status_code:409});
+    //     }
+    // }
+    const userUpdate = await prisma.user.update({
         where:{
             id:user.id,
         },
@@ -75,7 +75,7 @@ user_route.patch('/',verifyToken,async (req,res)=>{
             last_update:new Date().toISOString(),
         },
     })
-    return res.json({message:'Updated success'})
+    return res.json({message:'Updated success', user:userUpdate});
 })
 
 export default user_route;
