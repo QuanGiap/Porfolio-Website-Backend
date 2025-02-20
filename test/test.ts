@@ -168,6 +168,7 @@ describe('Test all route API', function () {
       }
       request_server.patch('/user').set('Authorization',
         'Bearer '+token
+        
       ).send(user_update_data).end((err,response)=>{
         assert.equal(response.statusCode,200,'Status code should be 200');
         assert.equal(response.body.message,'Updated success','message should be "Updated success"');
