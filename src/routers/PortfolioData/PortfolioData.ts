@@ -55,6 +55,17 @@ portfolio_data_route.post("/", verifyToken, async (req, res) => {
       res,
     });
   }
+  const result = await prisma.portfolioData.create({
+    data:{
+      website_design_id:user_input.website_id,
+      title:user_input.title,
+      desciption:user_input.description,
+      user_id:user.id,
+    }
+  })
+  return res.json({message:'Created portfolio data success',
+    data:result,
+  }).status(201);
 });
 
 /**
