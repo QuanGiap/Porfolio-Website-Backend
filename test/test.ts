@@ -305,25 +305,6 @@ describe('Test all route API', function () {
   //close server
   //delete all test data
   this.afterAll(async ()=>{
-    const portfoliodata_delete_promise = await prisma.portfolioData.deleteMany({
-      where:{
-        id:{
-          in:portfoliodata_test_data,
-        }
-      }
-    })
-    const portfolio_content_delete_promise = await prisma.portfolioContent.deleteMany({
-      where:{
-        id:{
-          in:portfoliodata_content,
-        }
-      }
-    })
-    const website_delete_promise = await prisma.websiteDesign.delete({
-      where:{
-        id:website_id,
-      }
-    })
     const user_delete_promise = await prisma.user.deleteMany({
       where:{
         id:{

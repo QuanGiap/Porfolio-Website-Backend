@@ -102,7 +102,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
     },
   });
   //create new content
-  res.send(result).status(201);
+  res.json({message:'Create content success',data:result}).status(201);
 });
 
 /**

@@ -47,9 +47,9 @@ model User {
 model PortfolioData {
   id                String             @id @default(auto()) @map("_id") @db.ObjectId
   website_design_id String             @db.ObjectId
-  website_design    WebsiteDesign      @relation(fields: [website_design_id], references: [id])
+  website_design    WebsiteDesign      @relation(fields: [website_design_id], references: [id], onDelete: Cascade)
   user_id           String             @db.ObjectId
-  user              User               @relation(fields: [user_id], references: [id])
+  user              User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
   project           Project[]
   achievement       Achievement[]
   portfolio_content PortfolioContent[]
@@ -71,13 +71,13 @@ model WebsiteDesign {
   create_at     DateTime        @default(now())
   last_update   DateTime        @default(now())
   creator_id    String          @db.ObjectId
-  creator       User            @relation(fields: [creator_id], references: [id])
+  creator       User            @relation(fields: [creator_id], references: [id], onDelete: Cascade)
 }
 
 model Experience {
   id               String         @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String         @db.ObjectId
-  portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id])
+  portfolioData    PortfolioData  @relation(fields: [portfolioData_id], references: [id], onDelete: Cascade)
   title            String
   experience_type  String         @default("")
   description      String
@@ -97,7 +97,7 @@ model Experience {
 model Project {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
-  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id], onDelete: Cascade)
   tools            String[]
   project_type     String        @default("")
   title            String
@@ -116,7 +116,7 @@ model Project {
 model Achievement {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
-  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id], onDelete: Cascade)
   achievement_type String        @default("")
   title            String
   description      String
@@ -133,7 +133,7 @@ model Achievement {
 model CodeVerify {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   user_id   String     @db.ObjectId
-  user      User       @relation(fields: [user_id], references: [id])
+  user      User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   create_at DateTime   @default(now())
   used      Boolean    @default(false)
   code      String
@@ -145,7 +145,7 @@ model CodeVerify {
 model PortfolioContent {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
-  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id], onDelete: Cascade)
   content          String
   place_id         String
   create_at        DateTime      @default(now())
@@ -157,7 +157,7 @@ model PortfolioContent {
 model PortfolioImage {
   id               String        @id @default(auto()) @map("_id") @db.ObjectId
   portfolioData_id String        @db.ObjectId
-  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id])
+  portfolioData    PortfolioData @relation(fields: [portfolioData_id], references: [id], onDelete: Cascade)
   image_id         String
   image_name       String
   image_size       Int
