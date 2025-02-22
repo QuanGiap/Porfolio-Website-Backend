@@ -55,6 +55,17 @@ portfolio_data_route.post("/", verifyToken, async (req, res) => {
       res,
     });
   }
+  const result = await prisma.portfolioData.create({
+    data:{
+      website_design_id:user_input.website_id,
+      title:user_input.title,
+      desciption:user_input.description,
+      user_id:user.id,
+    }
+  })
+  return res.json({message:'Created portfolio data success',
+    data:result,
+  }).status(201);
 });
 
 /**
@@ -91,7 +102,7 @@ portfolio_data_route.post("/content", verifyToken, async (req, res) => {
     },
   });
   //create new content
-  res.send(result).status(201);
+  res.json({message:'Create content success',data:result}).status(201);
 });
 
 /**

@@ -10,17 +10,18 @@ describe('Test all route API', function () {
   let token = '';
   let user_test_data:string[] = [];
   let portfoliodata_test_data:string[]=[];
+  let portfoliodata_content:string[]=[];
+  const userTestDataMain ={
+    first_name:"User",
+    last_name:"Test",
+    user_name:"user_test",
+    email:"email@gmail.com",
+    password:"Thisisapassword1!"
+  } 
   describe('Auth route', function () {
-    const userTestData ={
-      first_name:"User",
-      last_name:"Test",
-      user_name:"user_test",
-      email:"email@gmail.com",
-      password:"Thisisapassword1!"
-    } 
     it('add new user but missing info', function (done) {
       const user_missing_info={
-        ...userTestData,
+        ...userTestDataMain,
         last_name:undefined,
       }
       request_server.post('/auth/sign_up').send(user_missing_info).end((err,response)=>{
@@ -30,7 +31,7 @@ describe('Test all route API', function () {
       });
     });
     it('add new user', function (done) {
-      request_server.post('/auth/sign_up').send(userTestData).end((err,response)=>{
+      request_server.post('/auth/sign_up').send(userTestDataMain).end((err,response)=>{
         console.log(response.body);
         assert.equal(response.statusCode,201,'Status code should be 201');
         assert.equal(response.body.message,'User created, please veriy email','"message" should be "User created, please veriy email"');
@@ -40,7 +41,7 @@ describe('Test all route API', function () {
       });
     });
     it('add new user with existed email or user_name', function (done) {
-      request_server.post('/auth/sign_up').send(userTestData).end((err,response)=>{
+      request_server.post('/auth/sign_up').send(userTestDataMain).end((err,response)=>{
         assert.equal(response.statusCode,409,'Status code should be 409');
         assert.ok(response.body.errors?.includes('User name used'),'errors should contains "User name used"');
         assert.ok(response.body.errors?.includes('Email used'),'errors should contains "Email used"');
@@ -55,7 +56,7 @@ describe('Test all route API', function () {
       });
     });
     it('sign in but incorrect password', function (done) {
-      request_server.post('/auth/sign_in').send({email:userTestData.email,password:"Incorrect password"}).end((err,response)=>{
+      request_server.post('/auth/sign_in').send({email:userTestDataMain.email,password:"Incorrect password"}).end((err,response)=>{
         assert.equal(response.statusCode,401,'Status code should be 401');
         assert.equal(response.body.error, 'Password not correct','error should contains "Password not correct"');
         done();
@@ -63,43 +64,28 @@ describe('Test all route API', function () {
     });
     //sign in user success
     it('sign in user success', function (done) {
-      request_server.post('/auth/sign_in').send({email:userTestData.email,password:userTestData.password}).end((err,response)=>{
+      request_server.post('/auth/sign_in').send({email:userTestDataMain.email,password:userTestDataMain.password}).end((err,response)=>{
         assert.equal(response.statusCode,200,'Status code should be 200');
         assert.equal(response.body.message, 'Sign in success','message should contains "Sign in success"');
         assert.ok(response.body.authenticate_token, 'authenticate_token not found in response');
-        token = response.body.authenticate_token;
         done();
       });
     });
   });
 
   
-  //update user information with no token or invalid token
-  //update user information with exist user_name
-  //update user information with invalid data
-  //update user information with valid data
   describe('User route', function () {
-    //create website_id
-    // model WebsiteDesign {
-    //   id            String          @id @default(auto()) @map("_id") @db.ObjectId
-    //   url_website   String
-    //   PortfolioData PortfolioData[]
-    //   create_at     DateTime        @default(now())
-    //   last_update   DateTime        @default(now())
-    //   creator_id    String          @db.ObjectId
-    //   creator       User            @relation(fields: [creator_id], references: [id])
-    // }
+    const createUserTestData=(i:number)=>{
+      return{
+      first_name:"User "+i,
+      last_name:"Test",
+      user_name:"user_test "+i,
+      email:`email${i}@gmail.com`,
+      password:"Thisisapassword1!"
+      }
+    } 
     //create dummy user data before testing
     it('creating dummy data', function (done) {
-      const createUserTestData=(i:number)=>{
-        return{
-        first_name:"User "+i,
-        last_name:"Test",
-        user_name:"user_test "+i,
-        email:`email${i}@gmail.com`,
-        password:"Thisisapassword1!"
-        }
-      } 
       //create website
       prisma.websiteDesign.create({
         data:{
@@ -155,20 +141,93 @@ describe('Test all route API', function () {
         done();
       })
     })
-    it('should return -1 when the value is not present', function () {
-      assert.equal([1, 2, 3].indexOf(4), -1);
+
+    it('user login',function(done){
+      request_server.post('/auth/sign_in').send({email:userTestDataMain.email,password:userTestDataMain.password}).end((err,response)=>{
+        assert.equal(response.statusCode,200,'Status code should be 200');
+        assert.equal(response.body.message, 'Sign in success','message should contains "Sign in success"');
+        assert.ok(response.body.authenticate_token, 'authenticate_token not found in response');
+        token = response.body.authenticate_token;
+        done();
+      });
+    })
+    //update user information
+    it('update user information', function () {
+      const user_update_data = {
+        first_name:"User updated",
+        last_name:"Test updated",
+      }
+      request_server.patch('/user').set('Authorization',
+        'Bearer '+token
+        
+      ).send(user_update_data).end((err,response)=>{
+        assert.equal(response.statusCode,200,'Status code should be 200');
+        assert.equal(response.body.message,'Updated success','message should be "Updated success"');
+        assert.equal(response.body.user.first_name,user_update_data.first_name,"first_name should be updated");
+        assert.equal(response.body.user.last_name,user_update_data.last_name,"last_name should be updated");
+      })
     });
   });
 
-  //create port_data_id with no token or invalid token
-  //create port_data_id
-  //create port_data content
-  //update port_data content
   //update port_data content non exist
-  //after Achievement, Project, Experience, and image route,get all data.
+  //after Achievement, Project, Experiece, and image route,get all data.
   describe('PortData route', function () {
-    it('should return -1 when the value is not present', function () {
-      assert.equal([1, 2, 3].indexOf(4), -1);
+    let port_data_id = '';
+    let port_content_id = '';
+    //create port_data_id with no token or invalid token
+    it('create port_data_id with no token', function (done){
+      request_server.post('/portfolio_content').send({
+        website_id:website_id,
+        title:'Portfolio Data test title',
+        description:'Portfolio data test desciption',
+      }).end((err,res)=>{
+        assert.equal(res.statusCode,403,'Status code should be 403');
+        done();
+      })
+    })
+    //create port_data_id
+    it('create port_data_id', function (done) {
+      request_server.post('/portfolio_content').set('Authorization','Bearer '+token).send({
+        website_id:website_id,
+        title:'Portfolio Data test title',
+        description:'Portfolio data test desciption',
+      }).end((err,res)=>{
+        assert.equal(res.statusCode,201,'Status code should be 201');
+        assert.ok(res.body.data,'data not found in response');
+        assert.ok(res.body.data.id,'data not found in response');
+        portfoliodata_test_data.push(res.body.data.id);
+        port_data_id = res.body.data.id;
+        done();
+      })
+    });
+    //create port_data content
+    it('create port_data content', function (done) {
+      request_server.post('/portfolio_content/content').set('Authorization','Bearer '+token).send({
+        portfolio_data_id:port_data_id,
+        content:'Portfolio content test',
+        place_id:'place_id_001',
+      }).end((err,res)=>{
+        assert.equal(res.statusCode,201,'Status code should be 201');
+        assert.ok(res.body.data.id,'id not found in response');
+        assert.equal(res.body.data.content,'Portfolio content test','content should be "Portfolio content test"');
+        port_content_id = res.body.data.id;
+        portfoliodata_content.push(res.body.data.id);
+        done();
+      })
+    });
+    //update port_data content
+    it('update port_data content', function (done) {
+      request_server.patch('/portfolio_content/content').set('Authorization','Bearer '+token).send({
+        id:port_content_id,
+        content:'Portfolio content test updated',
+        place_id:'place_id_002',
+      }).end((err,res)=>{
+        assert.equal(res.statusCode,201,'Status code should be 201');
+        assert.ok(res.body.data.id,'id not found in response');
+        assert.equal(res.body.data.content,'Portfolio content test updated','content should be "Portfolio content test updated"');
+        assert.equal(res.body.data.place_id,'place_id_002','place_id should be "place_id_002"');
+        done();
+      })
     });
   });
   //create achievement with no token
@@ -246,7 +305,7 @@ describe('Test all route API', function () {
   //close server
   //delete all test data
   this.afterAll(async ()=>{
-    await prisma.user.deleteMany({
+    const user_delete_promise = await prisma.user.deleteMany({
       where:{
         id:{
           in:user_test_data,
