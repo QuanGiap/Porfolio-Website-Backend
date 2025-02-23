@@ -294,6 +294,7 @@ describe('Test all route API', function () {
   //create Image User
   //Update Image User (same route with create)
   //create Image Content
+  
   //update Image Content no token
   //update Image Content invalid id
   //update Image Content not owned
